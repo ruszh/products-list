@@ -23,13 +23,21 @@
                 <input type="text" class="form-control search-input" id="shopSearchInput" placeholder="Search by shops">
                 <ul id="shopsList" class="list-group"></ul>
             </div>
-            <div class="col">
-                <input type="text" class="form-control search-input" id="productSeachInput" placeholder="Search by products">
+            <div class="col poducts-container">
+                <input type="text" class="form-control search-input" id="productSeachInput" placeholder="Search by products" />
+                <div class="dropdown-menu" id="productSearchDropdown">                        
+                        <a class="dropdown-item" href="#">Action</a>
+                        <a class="dropdown-item" href="#">Another action</a>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                </div>
                 <ul id="productsList" class="list-group"></ul>
             </div>
         </div>
     </div>
-    
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+    <script src='Models.js'></script>
+    <script src='Views.js'></script>
+    <script src='Controller.js'></script>
     <script src='script.js'></script>
 </body>
 </html>

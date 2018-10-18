@@ -7,3 +7,12 @@
 .search-input {
     margin-bottom: 10px;
 }
+
+.products-container {
+    position: relative;
+}
+
+#productSearchDropdown {
+    top: 46px;
+    left: 15px;
+}
