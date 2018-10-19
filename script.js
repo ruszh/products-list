@@ -32,9 +32,9 @@ shopSearchInput.addEventListener('keydown', () => {
     controller.searchByShops();
 });
 
-productSearchInput.addEventListener('keydown', () => {    
-    controller.searchByProducts();
-});
+productSearchInput.addEventListener('keydown', _.debounce(
+    () => controller.searchByProducts(), 1000, { leading: false, trailing: true }
+));
 
 
 

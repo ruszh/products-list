@@ -75,7 +75,7 @@ class ProductsView {
         const selectedProductsArr = [];
 
         checkboxes.forEach((el) => {
-            if(el.checked === true) {
+            if(el.checked) {
                 selectedProductsArr.push(el.parentNode.dataset.name)
             }
         });
