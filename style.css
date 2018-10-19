@@ -8,11 +8,11 @@
     margin-bottom: 10px;
 }
 
-.products-container {
+.list-wrapper {
     position: relative;
 }
 
-#productSearchDropdown {
+.search-dropdown {
     top: 46px;
     left: 15px;
 }

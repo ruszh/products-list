@@ -4,55 +4,19 @@ function mergeArrays(arrs) {
 }
 
 const shopsModel = new ShopsModel();
-const productsModel = new ProductsModel();
+// const productsModel = new ProductsModel();
 
-const shopsView = new ShopsView();
-const productsView = new ProductsView();
+// const shopsView = new ShopsView();
+// const productsView = new ProductsView();
 
-const controller = new Controller(shopsView, productsView, shopsModel, productsModel);
-
-const productsList = document.getElementById('productsList');
-const shopsList = document.getElementById('shopsList');
-
-const shopSearchInput = document.getElementById('shopSearchInput');
-const productSearchInput = document.getElementById('productSeachInput');
-const productSearchDropdown = document.getElementById('productSearchDropdown');
-
-
-productSearchDropdown.addEventListener('click', (e) => {
-    const value = e.target.innerText;
-
-    controller.addProductToRenderList(value);
-    controller.hideProductsSearchResult();
-    productSearchInput.value = ''; 
-})
-
-
-shopSearchInput.addEventListener('keydown', () => {
-    controller.searchByShops();
-});
-
-productSearchInput.addEventListener('keydown', _.debounce(
-    () => controller.searchByProducts(), 1000, { leading: false, trailing: true }
-));
+const shopsInputView = new ShopsInput('shopsInput')
 
 
 
-productSearchInput.addEventListener('blur', () => {    
-    setTimeout(() => controller.hideProductsSearchResult(), 500)
-});
+const controller = new Controller(shopsInputView, shopsModel);
 
-productsList.addEventListener('change', () => {
-    controller.renderShopsList();
-    controller.removeShopsSelection();
-});
-
-shopsList.addEventListener('change', () => {
-    controller.renderSelectedProductsList();
-    controller.removeProductsSelection();
-});
-
-
-
-controller.renderShopsList();
-controller.renderProductsList();
+controller.renderShopsInput();
+controller.initilize();
+controller.renderSearchList(shopsModel.getShopsList());
+// controller.renderShopsList();
+// controller.renderProductsList();

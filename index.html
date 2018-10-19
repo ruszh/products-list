@@ -9,27 +9,24 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-          <div class="row">
-              <div class="col">
-                <h2>Shops</h2>
-              </div>
-              <div class="col">
-                <h2>Products</h2>
-              </div>
-          </div>
-          <div class="row">
+    <div class="container"> 
+        <div class="row">
             <div class="col">
-                <input type="text" class="form-control search-input" id="shopSearchInput" placeholder="Search by shops">
+                <h2>Shops list</h2>
+            </div>
+            <div class="col">
+                    <h2>Products list</h2>
+            </div>
+        </div>         
+        <div class="row">
+            <div class="col list-wrapper">
+                <div id="shopsInput"></div>                
+                <div class="dropdown-menu search-dropdown" id="shopSearchDropdown"></div>
+                <div id="shopsList"></div>
                 <ul id="shopsList" class="list-group"></ul>
             </div>
-            <div class="col poducts-container">
-                <input type="text" class="form-control search-input" id="productSeachInput" placeholder="Search by products" />
-                <div class="dropdown-menu" id="productSearchDropdown">                        
-                        <a class="dropdown-item" href="#">Action</a>
-                        <a class="dropdown-item" href="#">Another action</a>
-                        <a class="dropdown-item" href="#">Something else here</a>
-                </div>
+            <div class="col list-wrapper">                
+                <div class="dropdown-menu search-dropdown" id="productSearchDropdown"></div>
                 <ul id="productsList" class="list-group"></ul>
             </div>
         </div>

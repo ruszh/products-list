@@ -22,7 +22,9 @@ class ShopsModel {
                     products: ["кофе", "бытовая химия", "шоколад", "овощи", "фрукты", "молоко", "яйца", "чай", "мясо"]
                 }
             ];
-        }
+        
+        
+    }
 
     getShopsList(hasProducts) { 
         if (hasProducts) {
@@ -30,6 +32,8 @@ class ShopsModel {
         }
         return this.shops;
     }
+
+    
 }
 
 class ProductsModel {
