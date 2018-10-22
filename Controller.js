@@ -33,6 +33,7 @@ class Controller {
 
         this.shopSearchView.render();
         this.productSearchView.render();
+
     }
 
     onProductsSearchHandler(e) {
@@ -55,9 +56,15 @@ class Controller {
         this.productSearchView.hideSearchList();
     }
     
-    onProductsSelectHandler() {        
-        const shops = this.shopsModel.selectShops(this.productsView.selectedItems());
-        
+    onProductsSelectHandler(e) {        
+        // const shops = this.shopsModel.selectShops(this.productsView.selectedItems());
+        const id = +e.target.parentNode.dataset.id;
+        log(id);
+        this.productsView.select(id);
+
+        //const shops = this.shopsModel.selectShops(this.productsView.select());
+        const shops = this.shopsModel.getShopsList();
+        log(shops)
         this.shopsView.render(shops);
     }
     
@@ -77,24 +84,27 @@ class Controller {
         this.shopSearchView.renderSearchList(allShops.filter(el => el.name.toLowerCase().indexOf(query)!== -1));      
     }
 
-    onShopsSelectHandler() {
-        const selectedShops = this.shopsModel.getShopsList(this.shopsView.selectedItems());
+    onShopsSelectHandler(e) {
+        const id = +e.target.parentNode.dataset.id;
+        this.shopsView.select(id);
+
+        const selectedShops = this.shopsModel.getShopsList(this.shopsView.select());
         const productsOfSelectedShops = selectedShops.map(el => el.productsIds);
         const selectedProductsList = mergeArrays(productsOfSelectedShops);
-        this.productsModel.setSelectedArr(this.productsModel.getProductsList(selectedProductsList)); 
         
-        this.productsModel.setSelectMode(true);
         
-        if(!this.shopsView.selectedItems().length) {            
-            this.productsModel.setSelectMode(false);
-            this.productsModel.setSelectedArr([]);
-            this.productsView.render(this.productsModel.getProductsList());
-            log('render from all products');
-            return;
-        }
-        log('render from selected products')
+
+        // this.productsModel.setSelectMode(true);
         
-        this.productsView.render(this.productsModel.getProductsList());
+        // if(!this.shopsView.selectedItems().length) {            
+        //     this.productsModel.setSelectMode(false);
+        //     this.productsModel.setSelectedArr([]);
+        //     this.productsView.render(this.productsModel.getProductsList());
+        //     return;
+        // }
+        const result = this.productsModel.getProductsList(selectedProductsList);
+        //log(result)
+        this.productsView.render(result);
     }
     
 }

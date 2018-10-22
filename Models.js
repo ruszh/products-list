@@ -31,9 +31,11 @@ class ShopsModel {
     getShopsList(idsArr) { 
         if(idsArr) return this.shops.filter(el => idsArr.indexOf(el.id) !== -1)
         return this.shops;
+
     }
 
     selectShops(prod) {
+        if(!prod.length) return this.shops;
         const filteredShops = this.shops.filter(el => prod.every(product => el.productsIds.find(i => product === i)));
         this.shops = this.shops.map(el => {
             if(filteredShops.indexOf(el) === -1) {
@@ -62,36 +64,30 @@ class ProductsModel {
             { id: 10, name: "мясо", selected: true }, 
             { id: 11, name: "готовая еда", selected: true }
         ];
-        this.selectMode = false;
-        this.selectedArr = [];
-    }
-
-    getAllProducts() {
-        return this.allProducts;
     }
 
     getProductsList(idsArr) {
         if(idsArr && idsArr.length > 0) {
             return this.allProducts.filter(el => idsArr.indexOf(el.id) !== -1);
         };
-        if(this.selectMode) return this.selectedArr;
+        //if(this.selectMode) return this.selectedArr;
         return this.allProducts;
     }
 
-    addToSelectedArr(element) {
-        if(typeof element == 'number') {
-            this.selectedArr.push(this.allProducts.find(el => el.id === element));
-            return;
-        }
-        this.selectedArr.push(element);
-    }
+    // addToSelectedArr(element) {
+    //     if(typeof element == 'number') {
+    //         this.selectedArr.push(this.allProducts.find(el => el.id === element));
+    //         return;
+    //     }
+    //     this.selectedArr.push(element);
+    // }
 
-    setSelectedArr(arr) {
-        this.selectedArr = [...arr];
-    }
+    // setSelectedArr(arr) {
+    //     this.selectedArr = [...arr];
+    // }
 
-    setSelectMode(value) {
-        this.selectMode = value;
-    }
+    // setSelectMode(value) {
+    //     this.selectMode = value;
+    // }
     
 }

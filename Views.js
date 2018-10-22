@@ -56,7 +56,6 @@ class ListView {
         this.listContainer = document.getElementById(targetId);       
 
         this.onSelected = null;
-
         this.selectedItems = [];
 
         // this.onToggle = null;  
@@ -83,18 +82,19 @@ class ListView {
         
         arr.forEach(el => {
             const li = document.createElement('li');
-            const input = document.createElement('input');
+            const checkbox = document.createElement('input');
 
-            input.type = 'checkbox';
-            input.className = 'checkbox';
+            checkbox.type = 'checkbox';
+            checkbox.className = 'checkbox';
             li.className = 'list-group-item';
+
             if(!el.selected) li.classList.add("not-selected");
-            
+            if(this.selectedItems.indexOf(el.id) !== -1) checkbox.checked = true;
             li.dataset.id = el.id;
 
-            input.addEventListener('change', (e) => this.onSelected(e));
+            checkbox.addEventListener('change', (e) => this.onSelected(e));
 
-            li.appendChild(input);
+            li.appendChild(checkbox);
             li.appendChild(document.createTextNode(el.name));
 
             ul.appendChild(li);
@@ -123,7 +123,14 @@ class ListView {
         // checkboxes.forEach(el => {
         //     if(+el.parentNode.dataset.id === id) el.checked = true;
         // });
-        
+        const selected = this.selectedItems;   
+        if(selected.indexOf(id) !== -1) {
+            selected.splice(selected.indexOf(id), 1);  
+            return;
+        } 
+        selected.push(id);
+        return selected;
+
     }
 
     selectedItems() {
