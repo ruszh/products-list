@@ -1,22 +1,25 @@
-
 function mergeArrays(arrs) {       
     return [...new Set(arrs.reduce((a, b) => [...a, ...b], []))];
 }
 
+const log = console.log;
+
+const productsModel = new ProductsModel();
 const shopsModel = new ShopsModel();
-// const productsModel = new ProductsModel();
 
-// const shopsView = new ShopsView();
-// const productsView = new ProductsView();
+const shopSearchView = new SearchView('shopsInput');
+const productSearchView = new SearchView('productsInput');
 
-const shopsInputView = new ShopsInput('shopsInput')
+const shopsView = new ListView('shopsList');
+const productsView = new ListView('productsList');
 
+const controller = new Controller(
+    shopSearchView, 
+    shopsView, 
+    productsView, 
+    productSearchView, 
+    shopsModel, 
+    productsModel
+);
 
-
-const controller = new Controller(shopsInputView, shopsModel);
-
-controller.renderShopsInput();
-controller.initilize();
-controller.renderSearchList(shopsModel.getShopsList());
-// controller.renderShopsList();
-// controller.renderProductsList();
+controller.initialize();

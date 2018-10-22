@@ -1,27 +1,31 @@
-class ShopsInput {
+class SearchView {
     constructor(targetId) {
         this.inputContainer = document.getElementById(targetId);
         this.searchResultContainer = document.createElement('div');
         this.inputElement = document.createElement('input');
 
+        this.inputElement.addEventListener('keydown', (e) => this.onSearch(e));
+        this.searchResultContainer.addEventListener('click', (e) => this.selectedItem(e));
+
         this.onSearch = null;
+        this.selectedItem = null;
+        
     }
 
     render() {
         this.inputElement.type = "text";
         this.inputElement.className = "form-control search-input";
-        this.inputElement.placeholder = "Search by shop";
-
+        this.inputElement.placeholder = "Search";
         // this.inputElement.addEventListener('keydown', _.debounce(
         //     (e) => console.log(this.onSearch), 1000, { leading: false, trailing: true }
         // ));
 
-        this.inputElement.addEventListener('keydown', (e) => this.onSearch(e));
-
+        
         this.inputContainer.appendChild(this.inputElement);
     }
 
     renderSearchList(arr) {
+        if(!arr.length) return;
         this.searchResultContainer.innerHTML = '';
         this.searchResultContainer.className = 'dropdown-menu search-dropdown';
 
@@ -29,99 +33,121 @@ class ShopsInput {
             const item = document.createElement('div');
             item.className = 'dropdown-item';
             item.innerText = el.name;
+            item.dataset.id = el.id;
 
             this.searchResultContainer.appendChild(item);
         });
 
+        
         this.searchResultContainer.style.display = 'block';
         this.inputContainer.appendChild(this.searchResultContainer);
+        
     }
-
     
-
     hideSearchList() {
         this.searchResultContainer.innerHTML = '';
+        this.inputElement.value = '';
         this.searchResultContainer.style.display = 'none';
     }
 }
 
-// class ShopsView {
-//     constructor() {
-//         this.shopsList = document.getElementById('shopsList');
-//         this.shopSearchInput = document.getElementById('shopSearchInput');
-//         this.shopSearchDropdown = document.getElementById('shopSearchDropdown');
+class ListView {
+    constructor(targetId) {
+        this.listContainer = document.getElementById(targetId);       
 
-//         this.shopSearchDropdown.addEventListener('click', (e) => {
-//             const shopName = e.target.innerText;
+        this.onSelected = null;
+
+        this.selectedItems = [];
+
+        // this.onToggle = null;  
         
-//             controller.addShopToRenderList(shopName);
-//             controller.hideShopSearchResult();
-//             shopSearchInput.value = '';
-//         })
-//         this.shopSearchInput.addEventListener('keydown', _.debounce(
-//             () => controller.searchByShops(), 1000, { leading: false, trailing: true }
-//         ));
+        // this.shopSearchInput.addEventListener('keydown', _.debounce(
+        //     () => controller.searchByShops(), 1000, { leading: false, trailing: true }
+        // ));                 
         
         
+    }
+
+    render(arr) {
+        this.listContainer.innerHTML = '';
+
+        const ul = document.createElement('ul'); 
         
-//         this.shopsList.addEventListener('change', () => {
-//             controller.renderSelectedProductsList();
-//             controller.removeProductsSelection();
-//         });
+        // const btn = document.createElement('button');
+        // btn.className = 'btn';
+        // btn.innerText = 'Toggle all';
+        // btn.onclick = this.toggleAll.bind(this);        
+        // this.listContainer.appendChild(btn);
+
+        ul.className = 'list-group';
         
-//     }
-//     render(shops) {
-//         const shopsList = shops.reduce((els, el) => (els +
-//             `<li class="list-group-item" data-id="${el.id}">
-//                 <input type='checkbox' class="checkbox"/>
-//                 ${el.name}
-//             </li>`
-//         ), '')
-//         this.shopsList.innerHTML = shopsList;
-//     }
+        arr.forEach(el => {
+            const li = document.createElement('li');
+            const input = document.createElement('input');
 
-//     renderSearchResult(result) {
-//         if(!result.length) return;
-//         const searchEl = this.shopSearchDropdown;
-//         const searchResult = result.reduce((els, el) => (els + 
-//             `<a class="dropdown-item" href="#">${el.name}</a>`), '');
-//         searchEl.innerHTML = '';
+            input.type = 'checkbox';
+            input.className = 'checkbox';
+            li.className = 'list-group-item';
+            if(!el.selected) li.classList.add("not-selected");
+            
+            li.dataset.id = el.id;
 
-//         searchEl.innerHTML = searchResult;
-//         searchEl.style.display = 'block';
-//     }
+            input.addEventListener('change', (e) => this.onSelected(e));
 
-//     hideSearchResult() {
-//         this.shopSearchDropdown.style.display = 'none';        
-//     }
+            li.appendChild(input);
+            li.appendChild(document.createTextNode(el.name));
 
-//     selectedShops() {
-//         const checkboxes = this.shopsList.querySelectorAll('.checkbox');
-//         const selectedShopsArr = [];
+            ul.appendChild(li);
+        });
 
-//         checkboxes.forEach((el) => {
-//             if(el.checked) {
-//                 selectedShopsArr.push(+el.parentNode.dataset.id)
-//             }
-//         });
-//         return selectedShopsArr;
-//     }
+        this.listContainer.appendChild(ul);
+    }
 
-//     getSearchQuery() {
-//         return this.shopSearchInput.value;
-//     }
+    // toggleAll() {
+    //     const checkboxes = this.listContainer.querySelectorAll('.checkbox');
+    //     let notSelected = 0;    
+    //     checkboxes.forEach(el => {
+    //         if(!el.checked) notSelected++;
+    //     });
+    //     checkboxes.forEach(el => {
+    //         if(notSelected > 0) {
+    //             el.checked = true;
+    //         } else {
+    //             el.checked = false;
+    //         }
+    //     });
+    // }
 
-//     removeSelection() {
-//         const checkboxes = this.shopsList.querySelectorAll('.checkbox');
-//         checkboxes.forEach(el => el.checked = false);
-//     }
-// }
+    select(id) {
+        // const checkboxes = this.listContainer.querySelectorAll('.checkbox');
+        // checkboxes.forEach(el => {
+        //     if(+el.parentNode.dataset.id === id) el.checked = true;
+        // });
+        
+    }
+
+    selectedItems() {
+        const checkboxes = this.listContainer.querySelectorAll('.checkbox');
+        
+        checkboxes.forEach((el) => {
+            if(el.checked) {
+                this.selectedItems.push(+el.parentNode.dataset.id)
+            }
+        });
+        return selectedItemsArr;
+    }
+}
+
+
+
+
+//-------------------------Old code------------------------------------------------
+
 
 // class ProductsView {
 //     constructor() {
 //         this.productsList = document.getElementById('productsList');
-//         this.productSearchInput = document.getElementById('productSeachInput');
-//         this.productSearchDropdown = document.getElementById('productSearchDropdown');
+        
 //         this.searchMode = false;
 
 //         this.productSearchInput.addEventListener('blur', () => {    
@@ -132,6 +158,7 @@ class ShopsInput {
 //             controller.renderShopsList();
 //             controller.removeShopsSelection();
 //         });
+
 //         this.productSearchInput.addEventListener('keydown', _.debounce(
 //             () => controller.searchByProducts(), 1000, { leading: false, trailing: true }
 //         ));
@@ -142,8 +169,7 @@ class ShopsInput {
 //             controller.addProductToRenderList(productName);
 //             controller.hideProductsSearchResult();
 //             productSearchInput.value = '';
-//         })
-        
+//         });
         
 //     }
 
