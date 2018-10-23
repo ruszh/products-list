@@ -9,14 +9,39 @@ class Controller {
         this.productSearchView = productSearchView;
     }
 
-    
     renderShops() {
         this.shopsView.render(this.shopsModel.getShopsList());
     }
 
-    renderProducts() {
-        this.productsView.render(this.productsModel.getProductsList());
-    }
+    // toggleActive(arr, items) {
+
+    // }
+
+    renderProducts(products) {               
+        if(!products) {
+            this.productsView.render(this.productsModel.getProductsList());
+            return;
+        }
+        const selectedProductsIds = this.productsView.select();
+
+        //check if some products selected, but not contain in selected shops
+        if(selectedProductsIds.length) {            
+            const selectedProducts = this.productsModel.getProductsList(selectedProductsIds);
+            
+            selectedProducts.forEach(el => {
+                if(!products.filter(e => e.id == el.id).length) {
+                    el.active = false;
+                    products.unshift(el);
+                } else {
+                    el.active = true;
+                }
+            });
+        }
+
+        if(!this.shopsView.select().length) this.productsModel.activeAll();
+        
+        this.productsView.render(products);
+    } 
 
     initialize() {
         this.shopSearchView.onSearch = this.onShopsSearchHandler.bind(this);
@@ -36,8 +61,9 @@ class Controller {
 
     }
 
+    //--------------------  Search methods  -------------------------//
     onProductsSearchHandler(e) {
-        const allProducts = this.productsModel.getAllProducts();
+        const allProducts = this.productsModel.getProductsList();
         const query = e.target.value.toLowerCase();
 
         if(!query.trim()) {
@@ -50,26 +76,23 @@ class Controller {
 
     onSearchProductSelectedHandler(e) {
         const elId = +e.target.dataset.id;
-        this.productsModel.addToSelectedArr(elId);
         
         this.productsView.select(elId);
+        this.productsModel.selectProduct(elId);
+
+        this.shopsView.render(this.shopsModel.filterShops(this.productsView.select()));
+
+        this.renderProducts();
         this.productSearchView.hideSearchList();
     }
-    
-    onProductsSelectHandler(e) {        
-        // const shops = this.shopsModel.selectShops(this.productsView.selectedItems());
-        const id = +e.target.parentNode.dataset.id;
-        log(id);
-        this.productsView.select(id);
 
-        //const shops = this.shopsModel.selectShops(this.productsView.select());
-        const shops = this.shopsModel.getShopsList();
-        log(shops)
-        this.shopsView.render(shops);
-    }
-    
     onSearchShopSelectedHandler(e) {
-        this.shopsView.select(+e.target.dataset.id);
+        const id = +e.target.dataset.id;
+
+        this.shopsModel.selectShop(id);
+
+        
+        this.filterProductsByShops(id);
         this.shopSearchView.hideSearchList();
     }
     
@@ -84,141 +107,41 @@ class Controller {
         this.shopSearchView.renderSearchList(allShops.filter(el => el.name.toLowerCase().indexOf(query)!== -1));      
     }
 
+    //-------------------  List methods  ---------------------//
+
+    //filtered shops by selected products
+    onProductsSelectHandler(e) {    
+        const id = +e.target.parentNode.dataset.id; 
+
+        this.productsView.select(id);
+        this.productsModel.selectProduct(id);
+        
+        const shops = this.shopsModel.filterShops(this.productsView.select());
+        
+        this.shopsView.render(shops);
+        this.renderProducts();
+    }
+
     onShopsSelectHandler(e) {
         const id = +e.target.parentNode.dataset.id;
-        this.shopsView.select(id);
+
+        this.shopsModel.selectShop(id);
+
+        this.renderShops();
+        this.filterProductsByShops(id);
+    }  
+    
+    filterProductsByShops(shopId) {
+        this.shopsView.select(shopId);
 
         const selectedShops = this.shopsModel.getShopsList(this.shopsView.select());
         const productsOfSelectedShops = selectedShops.map(el => el.productsIds);
         const selectedProductsList = mergeArrays(productsOfSelectedShops);
         
         
-
-        // this.productsModel.setSelectMode(true);
-        
-        // if(!this.shopsView.selectedItems().length) {            
-        //     this.productsModel.setSelectMode(false);
-        //     this.productsModel.setSelectedArr([]);
-        //     this.productsView.render(this.productsModel.getProductsList());
-        //     return;
-        // }
         const result = this.productsModel.getProductsList(selectedProductsList);
-        //log(result)
-        this.productsView.render(result);
-    }
-    
+        this.renderShops();
+        this.renderProducts(result);        
+    }    
 }
 
-
-
-
-//--------------------old code------------------------------------//
-
-// class Controller {
-//     constructor(shopsView, productsView, shopsModel, productsModel) {
-//         this.shopsView = shopsView;
-//         this.productsView = productsView;
-//         this.shopsModel = shopsModel;
-//         this.productsModel = productsModel;        
-//     }
-
-//     renderShopsList(fromRenderList) {        
-//         if(!fromRenderList) {
-//             let products = this.productsView.selectedProducts();
-//             let shopsList = this.shopsModel.getShopsList(products);
-
-//             this.shopsModel.setShopsToRender(shopsList);
-//         }        
-
-//         this.shopsView.render(this.shopsModel.getShopsToRender());            
-
-//     }
-
-//     searchByShops() {
-//         const query = this.shopsView.getSearchQuery().toLowerCase();
-//         if(!query.trim()) {
-//             this.renderShopsList();
-//             return;
-//         };
-//         const shopsList = this.shopsModel.getShopsList(); 
-//         const filteredShops = shopsList.filter(el => el.name.toLowerCase().indexOf(query) !== -1);
-       
-//         this.shopsView.renderSearchResult(filteredShops);
-//     }
-
-//     addShopToRenderList(shopName) {
-//         if(this.shopsModel.getShopsToRender().filter(el => el.name === shopName).length > 0) return;
-//         const shop = this.shopsModel.getShopsList().find(el => el.name === shopName);
-
-//         this.shopsModel.addShopToRender(shop);
-//         this.renderShopsList(true);
-//     }
-
-//     hideShopSearchResult() {
-//         this.shopsView.hideSearchResult();
-//     }
-
-//     selectedShops() {
-//         const selectedShopsIds = this.shopsView.selectedShops();
-//         const shopsList = this.shopsModel.getShopsList();
-//         const selectedShopsArr = shopsList.filter(shop => selectedShopsIds.some(id => Number(id) === Number(shop.id)))
-
-//         return selectedShopsArr;
-//     }
-
-//     renderProductsList() {
-//         if(!this.selectedShops().length && !this.productsModel.getProductsToRender().length) {
-//             const allProductsList = this.productsModel.getProductsList();
-//             this.productsModel.setProductsToRender(allProductsList);
-//         }
-
-//         this.productsView.render(this.productsModel.getProductsToRender());
-      
-//     }
-
-//     addProductToRenderList(product) {
-//         this.productsModel.addProductToRender(product);
-//         this.renderProductsList();
-//     }
-
-//     renderSelectedProductsList() {
-//         const selectedShopsProductsArr = this.selectedShops().map(el => el.products);
-//         const selectedProductsList = mergeArrays(selectedShopsProductsArr);
-
-//         this.productsModel.setProductsToRender(selectedProductsList);
-//         this.renderProductsList();
-
-//         return selectedProductsList;
-//     }
-    
-//     removeShopsSelection() {
-//         this.shopsView.removeSelection();
-//     }
-
-//     removeProductsSelection() {
-//         this.productsView.removeSelection();
-//     }
-
-//     hideProductsSearchResult() {
-//         this.productsView.hideSearchResult();
-//     }
-
-//     addProductToRenderList(product) {
-//         const productsList = this.productsModel.getProductsToRender();
-//         if(productsList.indexOf(product) !== -1) return;
-
-//         this.productsModel.addProductToRender(product);
-//         this.renderProductsList();
-//     }
-
-//     searchByProducts() {        
-//         const query = this.productsView.getSearchQuery().toLowerCase();
-
-//         const productsList = this.productsModel.getProductsList();
-//         const searchResult = productsList.filter(el => el.toLowerCase().indexOf(query) !== -1);
-
-//         if(!query) return;
-//         this.productsView.renderSearchResult(searchResult);                     
-//     }
-
-// }

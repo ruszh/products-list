@@ -4,22 +4,23 @@ class SearchView {
         this.searchResultContainer = document.createElement('div');
         this.inputElement = document.createElement('input');
 
-        this.inputElement.addEventListener('keydown', (e) => this.onSearch(e));
-        this.searchResultContainer.addEventListener('click', (e) => this.selectedItem(e));
+        this.initListeners();
+    }
 
-        this.onSearch = null;
-        this.selectedItem = null;
-        
+    initListeners() {
+        this.inputElement.addEventListener('keydown', _.debounce(
+            (e) => this.onSearch ? this.onSearch(e) : () => {}, 1000, { leading: false, trailing: true }
+        ));
+
+        this.searchResultContainer.addEventListener('click', 
+            (e) => this.selectedItem ? this.selectedItem(e) : () => {}
+        );        
     }
 
     render() {
         this.inputElement.type = "text";
         this.inputElement.className = "form-control search-input";
         this.inputElement.placeholder = "Search";
-        // this.inputElement.addEventListener('keydown', _.debounce(
-        //     (e) => console.log(this.onSearch), 1000, { leading: false, trailing: true }
-        // ));
-
         
         this.inputContainer.appendChild(this.inputElement);
     }
@@ -37,7 +38,6 @@ class SearchView {
 
             this.searchResultContainer.appendChild(item);
         });
-
         
         this.searchResultContainer.style.display = 'block';
         this.inputContainer.appendChild(this.searchResultContainer);
@@ -55,28 +55,28 @@ class ListView {
     constructor(targetId) {
         this.listContainer = document.getElementById(targetId);       
 
-        this.onSelected = null;
         this.selectedItems = [];
-
-        // this.onToggle = null;  
-        
-        // this.shopSearchInput.addEventListener('keydown', _.debounce(
-        //     () => controller.searchByShops(), 1000, { leading: false, trailing: true }
-        // ));                 
-        
         
     }
 
-    render(arr) {
+    render(arr) {      
+        if(this.selectedItems.length) {
+            arr.sort((a, b) => a.selected === b.selected ? 0 : b.selected ? 1 : -1 );
+        } else {
+            arr.sort((a, b) => a.name > b.name ? 1 : -1 );
+        }
+
         this.listContainer.innerHTML = '';
 
-        const ul = document.createElement('ul'); 
+        const ul = document.createElement('ul');
         
-        // const btn = document.createElement('button');
-        // btn.className = 'btn';
-        // btn.innerText = 'Toggle all';
-        // btn.onclick = this.toggleAll.bind(this);        
-        // this.listContainer.appendChild(btn);
+        const btn = document.createElement('button');
+
+        btn.className = 'btn btn-light';
+        btn.innerText = 'check/uncheck all';
+        btn.onclick = this.toggleAll.bind(this);  
+
+        this.listContainer.appendChild(btn);
 
         ul.className = 'list-group';
         
@@ -88,8 +88,10 @@ class ListView {
             checkbox.className = 'checkbox';
             li.className = 'list-group-item';
 
-            if(!el.selected) li.classList.add("not-selected");
+            if(el.active === false) li.classList.add("not-selected");
+
             if(this.selectedItems.indexOf(el.id) !== -1) checkbox.checked = true;
+
             li.dataset.id = el.id;
 
             checkbox.addEventListener('change', (e) => this.onSelected(e));
@@ -103,34 +105,36 @@ class ListView {
         this.listContainer.appendChild(ul);
     }
 
-    // toggleAll() {
-    //     const checkboxes = this.listContainer.querySelectorAll('.checkbox');
-    //     let notSelected = 0;    
-    //     checkboxes.forEach(el => {
-    //         if(!el.checked) notSelected++;
-    //     });
-    //     checkboxes.forEach(el => {
-    //         if(notSelected > 0) {
-    //             el.checked = true;
-    //         } else {
-    //             el.checked = false;
-    //         }
-    //     });
-    // }
+    toggleAll() {
+        const checkboxes = this.listContainer.querySelectorAll('.checkbox');
+        let notSelected = 0; 
+
+        const change = new Event('change')  
+        checkboxes.forEach(el => {
+            if(!el.checked) notSelected++;
+        });
+        checkboxes.forEach(el => {
+            if(notSelected > 0) {
+                if(el.checked) return;              
+                el.dispatchEvent(change);
+            } else {
+                el.dispatchEvent(change);
+            }
+        });
+    }
 
     select(id) {
-        // const checkboxes = this.listContainer.querySelectorAll('.checkbox');
-        // checkboxes.forEach(el => {
-        //     if(+el.parentNode.dataset.id === id) el.checked = true;
-        // });
+        
         const selected = this.selectedItems;   
+
+        if(!id) return selected;
         if(selected.indexOf(id) !== -1) {
             selected.splice(selected.indexOf(id), 1);  
             return;
-        } 
+        }
         selected.push(id);
-        return selected;
 
+        return selected;
     }
 
     selectedItems() {
@@ -145,85 +149,3 @@ class ListView {
     }
 }
 
-
-
-
-//-------------------------Old code------------------------------------------------
-
-
-// class ProductsView {
-//     constructor() {
-//         this.productsList = document.getElementById('productsList');
-        
-//         this.searchMode = false;
-
-//         this.productSearchInput.addEventListener('blur', () => {    
-//             setTimeout(() => controller.hideProductsSearchResult(), 500)
-//         });
-        
-//         this.productsList.addEventListener('change', () => {
-//             controller.renderShopsList();
-//             controller.removeShopsSelection();
-//         });
-
-//         this.productSearchInput.addEventListener('keydown', _.debounce(
-//             () => controller.searchByProducts(), 1000, { leading: false, trailing: true }
-//         ));
-        
-//         this.productSearchDropdown.addEventListener('click', (e) => {
-//             const productName = e.target.innerText;
-        
-//             controller.addProductToRenderList(productName);
-//             controller.hideProductsSearchResult();
-//             productSearchInput.value = '';
-//         });
-        
-//     }
-
-//     render(products) {
-//         const productsList = products.reduce((els, el) => (els +
-//             `<li class="list-group-item" data-name="${el}">
-//                 <input type='checkbox' class="checkbox"/>
-//                 ${el}
-//             </li>`
-//         ), '')
-//         this.productsList.innerHTML = productsList;
-//     }
-
-//     renderSearchResult(result) {
-//         if(!result.length) return;
-//         const searchEl = this.productSearchDropdown;
-//         const searchResult = result.reduce((els, el) => (els + 
-//             `<a class="dropdown-item" href="#">${el}</a>`), '');
-//         searchEl.innerHTML = '';
-
-//         searchEl.innerHTML = searchResult;
-//         searchEl.style.display = 'block';        
-//     }
-
-//     hideSearchResult() {
-//         this.productSearchDropdown.style.display = 'none';        
-//     }
-
-//     selectedProducts() {
-//         const checkboxes = this.productsList.querySelectorAll('.checkbox');
-//         const selectedProductsArr = [];
-
-//         checkboxes.forEach((el) => {
-//             if(el.checked) {
-//                 selectedProductsArr.push(el.parentNode.dataset.name)
-//             }
-//         });
-
-//         return selectedProductsArr;
-//     }
-
-//     removeSelection() {
-//         const checkboxes = this.productsList.querySelectorAll('.checkbox');
-//         checkboxes.forEach(el => el.checked = false);
-//     }
-
-//     getSearchQuery() {
-//         return this.productSearchInput.value;
-//     }
-// }

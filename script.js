@@ -2,7 +2,9 @@ function mergeArrays(arrs) {
     return [...new Set(arrs.reduce((a, b) => [...a, ...b], []))];
 }
 
+
 const log = console.log;
+
 
 const productsModel = new ProductsModel();
 const shopsModel = new ShopsModel();

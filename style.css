@@ -24,3 +24,7 @@
     background: rgba(111, 108, 108, 0.15);
     opacity: .5;
 }
+
+button {
+    margin-bottom: 10px;
+}
