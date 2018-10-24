@@ -4,17 +4,28 @@ class SearchView {
         this.searchResultContainer = document.createElement('div');
         this.inputElement = document.createElement('input');
 
-        this.initListeners();
+        this.initListeners(targetId);
     }
 
-    initListeners() {
-        this.inputElement.addEventListener('keydown', _.debounce(
-            (e) => this.onSearch ? this.onSearch(e) : () => {}, 1000, { leading: false, trailing: true }
+    initListeners(targetId) {
+        this.inputElement.addEventListener('keydown', _.debounce(            
+            (e) => this._onSearch(e, `search-${targetId}`),
+            1000, { leading: false, trailing: true }
         ));
 
-        this.searchResultContainer.addEventListener('click', 
-            (e) => this.selectedItem ? this.selectedItem(e) : () => {}
+        this.searchResultContainer.addEventListener('click',
+            (e) => this._onSelect(e, `select-${targetId}`)
         );        
+    }
+
+    _onSearch(e, eventName) {
+        const value = e.target.value.toLowerCase();
+        return ee.emit(eventName, value);
+    }
+
+    _onSelect(e, eventName) {
+        const id = Number(e.target.dataset.id);
+        return ee.emit(eventName, id);
     }
 
     render() {
@@ -53,7 +64,8 @@ class SearchView {
 
 class ListView {
     constructor(targetId) {
-        this.listContainer = document.getElementById(targetId);       
+        this.listContainer = document.getElementById(targetId);
+        this.eventName = `select-${targetId}`;
 
         this.selectedItems = [];
         
@@ -61,11 +73,12 @@ class ListView {
 
     render(arr) {      
         if(this.selectedItems.length) {
-            arr.sort((a, b) => a.selected === b.selected ? 0 : b.selected ? 1 : -1 );
+            arr.sort(sortByCheck);
+            
         } else {
-            arr.sort((a, b) => a.name > b.name ? 1 : -1 );
+            arr.sort(sortByName);
         }
-
+        
         this.listContainer.innerHTML = '';
 
         const ul = document.createElement('ul');
@@ -74,7 +87,7 @@ class ListView {
 
         btn.className = 'btn btn-light';
         btn.innerText = 'check/uncheck all';
-        btn.onclick = this.toggleAll.bind(this);  
+        btn.onclick = this._toggleAll.bind(this);  
 
         this.listContainer.appendChild(btn);
 
@@ -88,13 +101,13 @@ class ListView {
             checkbox.className = 'checkbox';
             li.className = 'list-group-item';
 
-            if(el.active === false) li.classList.add("not-selected");
+            if(el.active === false) li.classList.add("not-active");
 
             if(this.selectedItems.indexOf(el.id) !== -1) checkbox.checked = true;
 
             li.dataset.id = el.id;
-
-            checkbox.addEventListener('change', (e) => this.onSelected(e));
+ 
+            checkbox.addEventListener('change', (e) => this._onSelect(e));
 
             li.appendChild(checkbox);
             li.appendChild(document.createTextNode(el.name));
@@ -105,7 +118,7 @@ class ListView {
         this.listContainer.appendChild(ul);
     }
 
-    toggleAll() {
+    _toggleAll() {
         const checkboxes = this.listContainer.querySelectorAll('.checkbox');
         let notSelected = 0; 
 
@@ -121,6 +134,11 @@ class ListView {
                 el.dispatchEvent(change);
             }
         });
+    }
+
+    _onSelect(e) {
+        const id = Number(e.target.parentNode.dataset.id);
+        return ee.emit(this.eventName, id);
     }
 
     select(id) {

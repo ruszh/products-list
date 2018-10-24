@@ -12,12 +12,8 @@ class Controller {
     renderShops() {
         this.shopsView.render(this.shopsModel.getShopsList());
     }
-
-    // toggleActive(arr, items) {
-
-    // }
-
-    renderProducts(products) {               
+    
+    renderProducts(products) {
         if(!products) {
             this.productsView.render(this.productsModel.getProductsList());
             return;
@@ -44,15 +40,24 @@ class Controller {
     } 
 
     initialize() {
-        this.shopSearchView.onSearch = this.onShopsSearchHandler.bind(this);
-        this.productSearchView.onSearch = this.onProductsSearchHandler.bind(this);
+        //this.shopSearchView.onSearch = this.onShopsSearchHandler.bind(this);
+        //this.productSearchView.onSearch = this.onProductsSearchHandler.bind(this);
+        
+        // this.shopSearchView.selectedItem = this.onSearchShopSelectedHandler.bind(this);
+        // this.productSearchView.selectedItem = this.onSearchProductSelectedHandler.bind(this);
 
-        this.shopsView.onSelected = this.onShopsSelectHandler.bind(this);
-        this.productsView.onSelected = this.onProductsSelectHandler.bind(this);
-
-        this.shopSearchView.selectedItem = this.onSearchShopSelectedHandler.bind(this);
-        this.productSearchView.selectedItem = this.onSearchProductSelectedHandler.bind(this);
-
+        // this.shopsView.onSelected = this.onShopsSelectHandler.bind(this);
+        // this.productsView.onSelected = this.onProductsSelectHandler.bind(this);
+        
+        ee.on('search-shopsInput', this.onShopsSearchHandler, this);
+        ee.on('search-productsInput', this.onProductsSearchHandler, this);
+        
+        ee.on('select-shopsInput', this.onSearchShopSelectHandler, this);
+        ee.on('select-productsInput', this.onSearchProductSelectHandler, this);
+        
+        ee.on('select-productsList', this.onProductsSelectHandler, this);
+        ee.on('select-shopsList', this.onShopsSelectHandler, this);
+        
         this.renderShops();
         this.renderProducts();
 
@@ -62,10 +67,9 @@ class Controller {
     }
 
     //--------------------  Search methods  -------------------------//
-    onProductsSearchHandler(e) {
+    onProductsSearchHandler(query) {
         const allProducts = this.productsModel.getProductsList();
-        const query = e.target.value.toLowerCase();
-
+        
         if(!query.trim()) {
             this.productSearchView.hideSearchList();
             return;
@@ -74,32 +78,9 @@ class Controller {
         this.productSearchView.renderSearchList(allProducts.filter(el => el.name.toLowerCase().indexOf(query)!== -1));        
     }
 
-    onSearchProductSelectedHandler(e) {
-        const elId = +e.target.dataset.id;
-        
-        this.productsView.select(elId);
-        this.productsModel.selectProduct(elId);
-
-        this.shopsView.render(this.shopsModel.filterShops(this.productsView.select()));
-
-        this.renderProducts();
-        this.productSearchView.hideSearchList();
-    }
-
-    onSearchShopSelectedHandler(e) {
-        const id = +e.target.dataset.id;
-
-        this.shopsModel.selectShop(id);
-
-        
-        this.filterProductsByShops(id);
-        this.shopSearchView.hideSearchList();
-    }
-    
-    onShopsSearchHandler(e) {
+    onShopsSearchHandler(query) {
         const allShops = this.shopsModel.getShopsList();
-        const query = e.target.value.toLowerCase();
-
+       
         if(!query.trim()) {
             this.shopSearchView.hideSearchList();
             return;
@@ -107,14 +88,32 @@ class Controller {
         this.shopSearchView.renderSearchList(allShops.filter(el => el.name.toLowerCase().indexOf(query)!== -1));      
     }
 
+    onSearchProductSelectHandler(id) {        
+        this.productsView.select(id);
+        this.productsModel.selectProduct(id);
+
+        this.shopsView.render(this.shopsModel.filterShops(this.productsView.select()));
+
+        this.renderProducts();
+        this.productSearchView.hideSearchList();
+    }
+
+    onSearchShopSelectHandler(id) {
+        
+        this.shopsModel.selectShop(id);
+        
+        this.filterProductsByShops(id);
+        this.shopSearchView.hideSearchList();
+    }    
+    
+
     //-------------------  List methods  ---------------------//
 
     //filtered shops by selected products
-    onProductsSelectHandler(e) {    
-        const id = +e.target.parentNode.dataset.id; 
-
+    onProductsSelectHandler(id) {
         this.productsView.select(id);
         this.productsModel.selectProduct(id);
+
         
         const shops = this.shopsModel.filterShops(this.productsView.select());
         
@@ -122,9 +121,7 @@ class Controller {
         this.renderProducts();
     }
 
-    onShopsSelectHandler(e) {
-        const id = +e.target.parentNode.dataset.id;
-
+    onShopsSelectHandler(id) {
         this.shopsModel.selectShop(id);
 
         this.renderShops();

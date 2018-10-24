@@ -47,6 +47,7 @@ class ShopsModel {
             });
             return this.shops;
         }
+
         const filteredShops = this.shops.filter(el => prod.every(product => el.productsIds.find(i => product === i)));
         
         this.shops = this.shops.map(el => {
@@ -66,7 +67,7 @@ class ShopsModel {
                 el.selected = !el.selected;
                 return;
             }
-        })
+        });
     }
 }
 
@@ -98,15 +99,14 @@ class ProductsModel {
         this.allProducts.forEach(el => el.active = true)
     }
 
-    selectProduct(prodId) {
+    selectProduct(prodId) {        
         this.allProducts.forEach(el => {
-            if(el.id === +prodId) {
+            if(el.id === +prodId) {                
                 el.selected = !el.selected;
                 return;
             }
         });
-        
-        return this.allProducts.sort((a, b) => a.selected > b.selected ? -1 : 1)
+
     }
 
     getSelectedProducts() {

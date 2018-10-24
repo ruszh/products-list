@@ -20,7 +20,7 @@
 .search-dropdown div {
     cursor: pointer;
 }
-.not-selected {
+.not-active {
     background: rgba(111, 108, 108, 0.15);
     opacity: .5;
 }
