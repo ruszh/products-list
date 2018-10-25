@@ -167,3 +167,78 @@ class ListView {
     }
 }
 
+class AuthenticationView {
+    constructor(targetId) {
+        this.container = document.getElementById(targetId);
+        this.form = this.container.querySelector('form');
+        
+        this.authUser;
+
+        this.form.addEventListener('submit', (e) => this._submitHandler(e));
+    }
+
+
+    renderLoginUserData () {
+        const wrapper = document.createElement('div');
+        const userData = document.createElement('span');
+        const logoutBtn = document.createElement('button');
+
+        wrapper.className = 'container login-wrapper';
+        wrapper.id = 'login-wrapper'
+        userData.innerText = `User: ${this.authUser}`;
+        userData.className = 'float-right user-data'
+
+        logoutBtn.className = 'btn float-right btn-outline-primary';
+        logoutBtn.innerText = 'logout';
+        logoutBtn.addEventListener('click', () => this._logoutHandler());
+        
+        wrapper.appendChild(logoutBtn);
+        wrapper.appendChild(userData);
+
+        document.body.appendChild(wrapper);
+        
+    }
+
+
+    hideRegisterForm() {
+        this.authUser = this.form.elements[0].value;        
+        this.container.style.display = 'none';  
+    }
+
+    showRegisterForm() {
+        this.authUser = '';       
+        this.container.style.display = '';        
+        document.getElementById('login-wrapper').remove();
+    }
+
+    _submitHandler(e) {
+        e.preventDefault();
+        const form = e.target;
+        const email = form.elements[0].value;
+        const password = form.elements[1].value
+        
+        if(!email && !password) return;
+
+        const data = {
+            email: email,
+            password: password
+        }
+
+        return ee.emit('submit', data)
+    }
+
+    _logoutHandler() {
+        return ee.emit('logout', '');
+    }
+
+    invalidForm() {
+        this.form.elements[0].classList.add('is-invalid');
+        this.form.elements[1].classList.add('is-invalid');     
+    }
+
+    validForm() {
+        this.form.elements[0].classList.remove('is-invalid');
+        this.form.elements[1].classList.remove('is-invalid');
+    }
+    
+}

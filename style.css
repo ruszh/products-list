@@ -28,3 +28,20 @@
 button {
     margin-bottom: 10px;
 }
+.inputs-wrapper {
+    width: 300px;
+    margin: auto;
+}
+#login-container {
+    margin-top: 20%;
+}
+.app-container {
+    padding-top: 50px;
+}
+.login-wrapper {
+    position: absolute;
+    top: 0;
+}
+.user-data {
+    padding: 5px 10px 0 0 ;
+}

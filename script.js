@@ -12,12 +12,14 @@ const ee = new EventEmitter();
 
 const productsModel = new ProductsModel();
 const shopsModel = new ShopsModel();
+const authModel = new AuthenticationModel();
 
 const shopSearchView = new SearchView('shopsInput');
 const productSearchView = new SearchView('productsInput');
 
 const shopsView = new ListView('shopsList');
 const productsView = new ListView('productsList');
+const authView = new AuthenticationView('login-container');
 
 const controller = new Controller(
     shopSearchView, 
@@ -25,12 +27,9 @@ const controller = new Controller(
     productsView, 
     productSearchView, 
     shopsModel, 
-    productsModel
+    productsModel,
+    authView,
+    authModel
 );
-
-
-
-controller.initialize();
-
 
 

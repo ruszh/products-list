@@ -15,7 +15,7 @@ class EventEmitter {
     }
 
     removeListener(type, fn, context) {
-        if(this._hasListener(type)) {
+        if(this._hasListeners(type)) {
             for(;;) {
                 const index = this._indexOfListener(type, fn, context);
                 if(index < 0) {

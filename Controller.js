@@ -1,12 +1,69 @@
 class Controller { 
-    constructor(shopSearchView, shopsView, productsView, productSearchView, shopsModel, productsModel) {
-        this.shopsModel = shopsModel;
-        this.productsModel = productsModel;
+    constructor(
+        shopSearchView, 
+        shopsView, 
+        productsView, 
+        productSearchView, 
+        shopsModel, 
+        productsModel,
+        authView,
+        authModel
+                ) {
+        
+            this.shopsModel = shopsModel;
+            this.productsModel = productsModel;
+            this.authModel = authModel;
 
-        this.shopSearchView = shopSearchView;
-        this.shopsView = shopsView;
-        this.productsView = productsView;
-        this.productSearchView = productSearchView;
+            this.shopSearchView = shopSearchView;
+            this.shopsView = shopsView;
+            this.productsView = productsView;
+            this.productSearchView = productSearchView;
+
+            this.authView = authView;
+
+            ee.on('submit', this.onLoginHandler, this);
+
+    }
+
+    initialize() {  
+        
+        document.querySelector('#app-container').style.display = '';
+        
+        ee.on('search-shopsInput', this.onShopsSearchHandler, this);
+        ee.on('search-productsInput', this.onProductsSearchHandler, this);
+        
+        ee.on('select-shopsInput', this.onSearchShopSelectHandler, this);
+        ee.on('select-productsInput', this.onSearchProductSelectHandler, this);
+        
+        ee.on('select-productsList', this.onProductsSelectHandler, this);
+        ee.on('select-shopsList', this.onShopsSelectHandler, this);
+
+        ee.on('logout', this.logout, this);
+
+        this.renderShops();
+        this.renderProducts();
+
+        this.shopSearchView.render();
+        this.productSearchView.render();
+
+        this.authView.renderLoginUserData();
+
+    }
+
+    logout() {
+        document.getElementById('app-container').style.display = 'none';
+
+        ee.off('search-shopsInput', this.onShopsSearchHandler, this);
+        ee.off('search-productsInput', this.onProductsSearchHandler, this);
+        
+        ee.off('select-shopsInput', this.onSearchShopSelectHandler, this);
+        ee.off('select-productsInput', this.onSearchProductSelectHandler, this);
+        
+        ee.off('select-productsList', this.onProductsSelectHandler, this);
+        ee.off('select-shopsList', this.onShopsSelectHandler, this);
+
+        this.authView.showRegisterForm();
+        
     }
 
     renderShops() {
@@ -39,32 +96,7 @@ class Controller {
         this.productsView.render(products);
     } 
 
-    initialize() {
-        //this.shopSearchView.onSearch = this.onShopsSearchHandler.bind(this);
-        //this.productSearchView.onSearch = this.onProductsSearchHandler.bind(this);
-        
-        // this.shopSearchView.selectedItem = this.onSearchShopSelectedHandler.bind(this);
-        // this.productSearchView.selectedItem = this.onSearchProductSelectedHandler.bind(this);
 
-        // this.shopsView.onSelected = this.onShopsSelectHandler.bind(this);
-        // this.productsView.onSelected = this.onProductsSelectHandler.bind(this);
-        
-        ee.on('search-shopsInput', this.onShopsSearchHandler, this);
-        ee.on('search-productsInput', this.onProductsSearchHandler, this);
-        
-        ee.on('select-shopsInput', this.onSearchShopSelectHandler, this);
-        ee.on('select-productsInput', this.onSearchProductSelectHandler, this);
-        
-        ee.on('select-productsList', this.onProductsSelectHandler, this);
-        ee.on('select-shopsList', this.onShopsSelectHandler, this);
-        
-        this.renderShops();
-        this.renderProducts();
-
-        this.shopSearchView.render();
-        this.productSearchView.render();
-
-    }
 
     //--------------------  Search methods  -------------------------//
     onProductsSearchHandler(query) {
@@ -140,5 +172,24 @@ class Controller {
         this.renderShops();
         this.renderProducts(result);        
     }    
+
+    //-------------------  Authentication methoods ----------------------//
+    
+    onLoginHandler(data) {
+        this.authModel.checkUser(data)
+            .then(result => {
+                log(result)
+                if(result.success) {
+                    this.authView.validForm();
+                    this.authView.hideRegisterForm();
+                    this.initialize();
+                    
+                    return;        
+                }
+                this.authView.invalidForm();
+            })    
+            .catch(err => console.log(err)); 
+    }
+
 }
 
