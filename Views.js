@@ -171,14 +171,27 @@ class AuthenticationView {
     constructor(targetId) {
         this.container = document.getElementById(targetId);
         this.form = this.container.querySelector('form');
-        
+        this.spinner = document.querySelector('#spinner');
         this.authUser;
 
         this.form.addEventListener('submit', (e) => this._submitHandler(e));
     }
 
+    showSpinner() {
+        this.spinner.style.display = 'block'
+        log('show spinner')
+    }
 
-    renderLoginUserData () {
+    hideSpinner() {
+        this.spinner.style.display = 'none'
+        log('hide spinner')
+    }
+
+
+    renderLoginUserData() {
+        let wrapperEl = document.body.querySelector('#login-wrapper');
+        if(wrapperEl) wrapperEl.remove();
+
         const wrapper = document.createElement('div');
         const userData = document.createElement('span');
         const logoutBtn = document.createElement('button');
@@ -200,14 +213,13 @@ class AuthenticationView {
     }
 
 
-    hideRegisterForm() {
-        this.authUser = this.form.elements[0].value;        
-        this.container.style.display = 'none';  
+    hideRegisterForm() {              
+        this.container.style.display = 'none';
+        this.renderLoginUserData()
     }
 
-    showRegisterForm() {
-        this.authUser = '';       
-        this.container.style.display = '';        
+    showRegisterForm() {        
+        this.container.style.display = 'block';        
         document.getElementById('login-wrapper').remove();
     }
 
@@ -228,7 +240,7 @@ class AuthenticationView {
     }
 
     _logoutHandler() {
-        return ee.emit('logout', '');
+        return ee.emit('logout');
     }
 
     invalidForm() {

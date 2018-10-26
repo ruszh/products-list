@@ -115,28 +115,3 @@ class ProductsModel {
     
 }
 
-class AuthenticationModel {
-    constructor() {
-        this.fetchResult = '';
-    }
-
-    checkUser(user) {
-        let email = user.email.toLowerCase();
-        let password = user.password.toLowerCase();
-        
-        return fetch('http://localhost:8000/user/signin', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: email,
-                password: password
-            })
-        })
-        .then(res => res.json())    
-        
-
-        
-    }
-}

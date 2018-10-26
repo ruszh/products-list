@@ -1,11 +1,10 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const signup = require('../authentication/signup');
-const signin = require('../authentication/signin');
+import { signin, signup, verifyUser } from '../authentication';
 
 router.post('/signup', signup);
-
 router.post('/signin', signin);
+router.get('/verify', verifyUser);
 
-module.exports = router;
+export default router;

@@ -1,16 +1,17 @@
-const express = require('express');
-//const MongoClient = require('mongodb').MongoClient;
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
+import express from 'express';
+import mongoose from 'mongoose';
+import bodyParser from 'body-parser';
+
 const app = express();
-const user = require('./routes/user.route');
+
+import user from './routes/user.route';
 
 const port = 8000;
 
 app.use((req, res, next) => {
     res.append('Access-Control-Allow-Origin', ['*']);
     res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.append('Access-Control-Allow-Headers', 'Content-Type');
+    res.append('Access-Control-Allow-Headers', '*');
     next();
 });
 

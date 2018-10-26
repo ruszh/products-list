@@ -5,14 +5,13 @@ function mergeArrays(arrs) {
 const sortByName = (a, b) => a.name > b.name ? 1 : -1;
 const sortByCheck = (a, b) => a.selected === b.selected ? 0 : b.selected ? 1 : -1;
 
-
 const log = console.log;
 
 const ee = new EventEmitter();
+const authService = new AuthService();
 
 const productsModel = new ProductsModel();
 const shopsModel = new ShopsModel();
-const authModel = new AuthenticationModel();
 
 const shopSearchView = new SearchView('shopsInput');
 const productSearchView = new SearchView('productsInput');
@@ -28,8 +27,5 @@ const controller = new Controller(
     productSearchView, 
     shopsModel, 
     productsModel,
-    authView,
-    authModel
+    authView
 );
-
-
