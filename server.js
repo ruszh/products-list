@@ -1,9 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
-import redis from 'redis';
-
-const client = redis.createClient();
+import { Pool } from 'pg';
 
 const app = express();
 
@@ -11,24 +9,29 @@ import user from './routes/user.route';
 
 const port = 8000;
 
-client.on('connect', () => {
-    console.log('Client connected to redis DB')
+const pool = new Pool({
+    user: 'ruslan',
+    host: '127.0.0.1',
+    database: 'mydb',
+    password: '102938',
+    port: 5432
 });
 
-client.on('error', function (err) {
-    console.log('Something went wrong ' + err);
+// pool.query('SELECT * FROM shops WHERE id > 2')
+//     .then(res => console.log(res.rows[0]))
+//     .catch(e => setImmediate(() => {throw e}))
+
+pool.connect((err, client, done) => {
+    if(err) throw err;
+    client.query('SELECT * FROM shops', (error, result) => {
+        done();
+        if(error) {
+            console.log(error)
+        } else {
+            console.log(result)
+        }
+    })
 });
-
-client.set('test key', 'test value', redis.print);
-client.get('test key', (err, res) => {
-    if(err) {
-        console.log(err);
-        throw err;
-    }
-    console.log(`Result: ${res}`)
-})
-
-
 
 
 app.use((req, res, next) => {

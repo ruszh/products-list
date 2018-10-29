@@ -62,6 +62,7 @@ class ShopsModel {
     }
     
     selectShop(shopId) {
+
         this.shops.forEach(el => {
             if(el.id === +shopId) {
                 el.selected = !el.selected;
