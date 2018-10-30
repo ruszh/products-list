@@ -163,6 +163,7 @@ class ListView {
                 this.selectedItems.push(+el.parentNode.dataset.id)
             }
         });
+        
         return selectedItemsArr;
     }
 }
@@ -253,4 +254,38 @@ class AuthenticationView {
         this.form.elements[1].classList.remove('is-invalid');
     }
     
+}
+
+class SavedListView {
+    constructor(targetId) {
+        this.wrapper = document.getElementById(targetId);
+    }
+    render() {
+        
+        const saveBtn = document.createElement('button');
+        const loadBtn = document.createElement('button');
+
+        saveBtn.innerText = 'Seve';
+        loadBtn.innerText = 'Load';
+
+        saveBtn.classList.add('btn', 'save-btn', 'btn-success');
+        loadBtn.classList.add('btn', 'load-btn', 'btn-primary');
+
+        saveBtn.dataset.toggle = 'modal';
+        saveBtn.dataset.target = '#saveModal';
+
+        loadBtn.dataset.toggle = 'modal';
+        loadBtn.dataset.target = '#loadModal';
+
+        saveBtn.addEventListener('click', () => {
+            ee.emit('save-list');
+        });
+        loadBtn.addEventListener('click', () => {
+            ee.emit('load-list');
+        });
+
+        this.wrapper.appendChild(saveBtn);
+        this.wrapper.appendChild(loadBtn);
+
+    }
 }

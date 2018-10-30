@@ -2,6 +2,18 @@ import bcrypt from 'bcrypt';
 import User from '../models/user.model';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+
+dotenv.config()
+
+const pool = new Pool({
+    connectionString: process.env.PGCONFIG
+});
+
+
+
+//--------------- Authentication methoods --------------------------------//
 
 export function signin(req, res) {
     if(req.body.userId) {        
@@ -20,7 +32,7 @@ export function signin(req, res) {
                         email: user.email,
                         _id: user._id
                     },  
-                    'secret',
+                    process.env.JWTSECRET,
                     {
                         expiresIn: '2h'
                     });
@@ -69,7 +81,7 @@ export function signup(req, res) {
 }
 
 export function verifyUser(req, res) {    
-    jwt.verify(req.headers['x-access-token'], 'secret', (err, decoded) => {
+    jwt.verify(req.headers['x-access-token'], process.env.JWTSECRET, (err, decoded) => {
         if(err) {
             console.log(err.message)
             res.json({
@@ -77,7 +89,7 @@ export function verifyUser(req, res) {
             })
         } else {
             User.findOne({ _id: decoded._id})
-                .then(user => {
+                .then(user => {                    
                     res.json({
                         user: user
                     })
@@ -85,4 +97,30 @@ export function verifyUser(req, res) {
                 .catch(err => console.log(err))
         }
     })
+}
+
+//------------------------------------------------------------------------//
+
+export function getLists(req, res) {
+    const data = {};
+    pool.connect((err, client, done) => {
+        if(err) throw err;
+        client.query('SELECT * FROM shops', (error, result) => {
+            if(error) {
+                console.log(error)
+            } else {
+                data.shops = result.rows;
+            }
+        });
+        client.query('SELECT * FROM products', (error, result) => {
+            done();
+            if(error) {
+                console.log(error)
+            } else {
+                data.products = result.rows;
+                res.json(data);
+            }
+        });
+    });
+
 }

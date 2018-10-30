@@ -6,9 +6,9 @@ class Controller {
         productSearchView, 
         shopsModel, 
         productsModel,
-        authView
-                ) {
-        
+        authView,
+        savedListView
+                ) {        
             this.shopsModel = shopsModel;
             this.productsModel = productsModel;            
 
@@ -16,6 +16,7 @@ class Controller {
             this.shopsView = shopsView;
             this.productsView = productsView;
             this.productSearchView = productSearchView;
+            this.savedListView = savedListView;
 
             this.authView = authView;
                     
@@ -44,6 +45,7 @@ class Controller {
 
     initialize() {  
         
+        
         document.querySelector('#app-container').style.display = '';
         
         ee.on('search-shopsInput', this.onShopsSearchHandler, this);
@@ -65,6 +67,15 @@ class Controller {
 
         this.authView.renderLoginUserData();
 
+        this.savedListView.render();
+
+
+
+    }
+
+    fetchData() {
+        return fetch('http://localhost:3003/user/getlists')
+                .then(res => res.json())                
     }
 
     logout() {
@@ -79,17 +90,28 @@ class Controller {
         ee.off('select-productsList', this.onProductsSelectHandler, this);
         ee.off('select-shopsList', this.onShopsSelectHandler, this);
 
-        localStorage.clear();        
+        localStorage.removeItem('token');
         this.authView.showRegisterForm();        
     }
 
     login(userEmail) {
-        this.authView.authUser = userEmail;        
-        this.authView.renderLoginUserData();
-        this.authView.validForm();
-        this.authView.hideRegisterForm();
-        this.initialize();
-        this.authView.hideSpinner();
+        this.fetchData()
+            .then(res => {
+                this.shopsModel.shops = res.shops;
+                this.productsModel.allProducts = res.products;
+                this.authView.authUser = userEmail;     
+
+                this.authView.renderLoginUserData();
+                this.authView.validForm();
+                this.authView.hideRegisterForm();
+
+                this.initialize();
+                this.authView.hideSpinner();
+            })
+            .catch(err => {
+                log(err);
+            });
+        
     }
 
     renderShops() {
@@ -190,7 +212,7 @@ class Controller {
         this.shopsView.select(shopId);
 
         const selectedShops = this.shopsModel.getShopsList(this.shopsView.select());
-        const productsOfSelectedShops = selectedShops.map(el => el.productsIds);
+        const productsOfSelectedShops = selectedShops.map(el => el.productsids);
         const selectedProductsList = mergeArrays(productsOfSelectedShops);
         
         
@@ -202,13 +224,13 @@ class Controller {
     //-------------------  Authentication methoods ----------------------//
     
 
-
     onLoginHandler(data) {
         this.authView.showSpinner();
         authService.signin(data)
                     .then(result => {
                         log(result)
                         if(result.success) {
+                            log(result)
                             localStorage.setItem('token', result.token);
                             this.authView.authUser = result.data.email;
                             this.login(result.data.email);                            

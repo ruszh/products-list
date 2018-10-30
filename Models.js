@@ -1,35 +1,6 @@
 class ShopsModel {
     constructor() {
-        this.shops = [
-                {
-                    id: 1,
-                    name: 'АТБ',                
-                    productsIds: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ],
-                    active: true,
-                    selected: false
-                },
-                {
-                    id: 2,
-                    name: 'Сильпо',
-                    productsIds: [ 1, 2, 3, 5, 6, 7, 8, 9, 10, 11],
-                    active: true,
-                    selected: false
-                },
-                {
-                    id: 3,
-                    name: 'Класс',                
-                    productsIds: [ 4, 5, 6, 7, 8, 9, 11],
-                    active: true,
-                    selected: false
-                },
-                {
-                    id: 4,
-                    name: 'Метро',
-                    productsIds: [ 1, 2, 3, 4, 5, 7, 8, 9, 10],
-                    active: true,
-                    selected: false
-                }
-            ];
+        this.shops = [];
     }
 
     //return shops by id or all shops
@@ -48,7 +19,7 @@ class ShopsModel {
             return this.shops;
         }
 
-        const filteredShops = this.shops.filter(el => prod.every(product => el.productsIds.find(i => product === i)));
+        const filteredShops = this.shops.filter(el => prod.every(product => el.productsids.find(i => product === i)));
         
         this.shops = this.shops.map(el => {
             if(filteredShops.indexOf(el) === -1) {                
@@ -62,7 +33,6 @@ class ShopsModel {
     }
     
     selectShop(shopId) {
-
         this.shops.forEach(el => {
             if(el.id === +shopId) {
                 el.selected = !el.selected;
@@ -74,19 +44,7 @@ class ShopsModel {
 
 class ProductsModel {
     constructor() {
-        this.allProducts = [
-            { id: 1, name: "кофе", active: true, selected: false }, 
-            { id: 2, name: "бытовая химия", active: true, selected: false }, 
-            { id: 3, name: "шоколад", active: true, selected: false }, 
-            { id: 4, name: "овощи", active: true, selected: false }, 
-            { id: 5, name: "фрукты", active: true, selected: false },
-            { id: 6, name: "товары для дома", active: true, selected: false },
-            { id: 7, name: "молоко", active: true, selected: false },
-            { id: 8, name: "яйца", active: true, selected: false }, 
-            { id: 9, name: "чай", active: true, selected: false },
-            { id: 10, name: "мясо", active: true, selected: false }, 
-            { id: 11, name: "готовая еда", active: true, selected: false }
-        ];
+        this.allProducts = [];
     }
 
     getProductsList(idsArr) {
