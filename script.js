@@ -9,6 +9,7 @@ const log = console.log;
 
 const ee = new EventEmitter();
 const authService = new AuthService();
+const listsService = new SavedListsService();
 
 const productsModel = new ProductsModel();
 const shopsModel = new ShopsModel();

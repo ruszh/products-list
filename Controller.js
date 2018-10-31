@@ -10,7 +10,7 @@ class Controller {
         savedListView
                 ) {        
             this.shopsModel = shopsModel;
-            this.productsModel = productsModel;            
+            this.productsModel = productsModel;
 
             this.shopSearchView = shopSearchView;
             this.shopsView = shopsView;
@@ -27,7 +27,10 @@ class Controller {
                                 log(res)
                                 this.authView.hideSpinner();
                                 if(res.user.email && res.user._id) {                        
-                                    this.login(res.user.email);
+                                    this.login({
+                                        email : res.user.email,
+                                        userId: res.user._id
+                                    });
                                     return;
                                 }
                                 this.authView.showRegisterForm();                                    
@@ -40,6 +43,9 @@ class Controller {
                 
             });
             ee.on('submit', this.onLoginHandler, this);
+            ee.on('save-list', this.onSaveListHandler, this);
+            ee.on('load-list', this.onLoadListsHandler, this);
+            ee.on('select-list', this.onSelectListHandler, this);
             
     }
 
@@ -91,15 +97,17 @@ class Controller {
         ee.off('select-shopsList', this.onShopsSelectHandler, this);
 
         localStorage.removeItem('token');
-        this.authView.showRegisterForm();        
+        this.authView.showRegisterForm();   
+        this.authView.authUser = null;    
+        this.savedListView.hideButtons();
     }
 
-    login(userEmail) {
+    login(user) {
         this.fetchData()
             .then(res => {
                 this.shopsModel.shops = res.shops;
                 this.productsModel.allProducts = res.products;
-                this.authView.authUser = userEmail;     
+                this.authView.authUser = user;     
 
                 this.authView.renderLoginUserData();
                 this.authView.validForm();
@@ -221,24 +229,98 @@ class Controller {
         this.renderProducts(result);        
     }    
 
-    //-------------------  Authentication methoods ----------------------//
+    //-------------------  Authentication methods ----------------------//
     
 
     onLoginHandler(data) {
         this.authView.showSpinner();
         authService.signin(data)
                     .then(result => {
-                        log(result)
                         if(result.success) {
                             log(result)
                             localStorage.setItem('token', result.token);
-                            this.authView.authUser = result.data.email;
-                            this.login(result.data.email);                            
+                            const user = {
+                                userId: result.data._id,
+                                email: result.data.email
+                            }                        
+                            this.login(user);                            
                             return;        
                         }
                         this.authView.invalidForm();
                     })
                     .catch(err => console.log(err)); 
+    }
+
+    //--------------------------- Saved list methods --------------------------///
+
+
+    onSaveListHandler(listName) {  
+        const listObj = {
+            listName,
+            list: {
+                shops: this.shopsView.selectedItems,
+                products: this.productsView.selectedItems
+            }
+        };
+        //log(listObj);
+        this.saveList(listObj);
+    }
+
+    saveList(list) {
+        if(!list) return;
+        const userId = this.authView.authUser.userId;
+    
+        listsService.save(userId, list);
+            
+    }
+
+    onLoadListsHandler() {
+        const userId = this.authView.authUser.userId;
+    
+        listsService.load(userId)
+            .then(res => {
+                log(res.lists)
+                this.savedListView.savedLists = res.lists;
+                this.savedListView.renderLoadedLists(res.lists);            
+            })
+            .catch(err => log(err))
+    }
+
+    onSelectListHandler(selectedList) {
+        const query = {
+            listId: selectedList, 
+            userId: this.authView.authUser.userId
+        }
+        
+        listsService.getList(query)
+                    .then(res => {
+                        const selectedShops = res.list.shops;
+                        const selectedProducts = res.list.products;
+                        
+                        this.shopsView.selectedItems = [];
+                        this.productsView.selectedItems = [];
+                        
+                        selectedShops.forEach(el => {          
+
+                            this.shopsModel.selectShop(el);
+                            this.filterProductsByShops(el);
+                        });
+
+                        selectedProducts.forEach(el => {           
+
+                            this.productsView.select(el);
+                            this.productsModel.selectProduct(el);
+
+                            this.shopsView.render(this.shopsModel.filterShops(this.productsView.select()));
+
+                            this.renderProducts();
+                        });
+
+                    })
+                    .catch(err => log(err))
+        
+        
+      
     }
 
 }

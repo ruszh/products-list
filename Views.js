@@ -60,6 +60,7 @@ class SearchView {
         this.inputElement.value = '';
         this.searchResultContainer.style.display = 'none';
     }
+    
 }
 
 class ListView {
@@ -155,7 +156,9 @@ class ListView {
         return selected;
     }
 
-    selectedItems() {
+    
+
+    getSelectedItems() {
         const checkboxes = this.listContainer.querySelectorAll('.checkbox');
         
         checkboxes.forEach((el) => {
@@ -173,7 +176,7 @@ class AuthenticationView {
         this.container = document.getElementById(targetId);
         this.form = this.container.querySelector('form');
         this.spinner = document.querySelector('#spinner');
-        this.authUser;
+        this.authUser;        
 
         this.form.addEventListener('submit', (e) => this._submitHandler(e));
     }
@@ -188,7 +191,6 @@ class AuthenticationView {
         log('hide spinner')
     }
 
-
     renderLoginUserData() {
         let wrapperEl = document.body.querySelector('#login-wrapper');
         if(wrapperEl) wrapperEl.remove();
@@ -199,7 +201,7 @@ class AuthenticationView {
 
         wrapper.className = 'container login-wrapper';
         wrapper.id = 'login-wrapper'
-        userData.innerText = `User: ${this.authUser}`;
+        userData.innerText = `User: ${this.authUser.email}`;
         userData.className = 'float-right user-data'
 
         logoutBtn.className = 'btn float-right btn-outline-primary';
@@ -259,13 +261,28 @@ class AuthenticationView {
 class SavedListView {
     constructor(targetId) {
         this.wrapper = document.getElementById(targetId);
+        this.saveInput = document.getElementById('save-input');
+        this.saveButton = document.getElementById('save-button');
+        this.loadListsContainer = document.getElementById('load-lists-container');
+
+        this.savedLists;
+
+        this.saveButton.addEventListener('click', () => {
+            this.onSaveHandler();
+
+        });
+
+        this.loadListsContainer.addEventListener('click', (e) => {
+            this.selectedList(e);
+        })
     }
+
     render() {
-        
+        this.wrapper.innerHTML = '';
         const saveBtn = document.createElement('button');
         const loadBtn = document.createElement('button');
 
-        saveBtn.innerText = 'Seve';
+        saveBtn.innerText = 'Save';
         loadBtn.innerText = 'Load';
 
         saveBtn.classList.add('btn', 'save-btn', 'btn-success');
@@ -277,9 +294,6 @@ class SavedListView {
         loadBtn.dataset.toggle = 'modal';
         loadBtn.dataset.target = '#loadModal';
 
-        saveBtn.addEventListener('click', () => {
-            ee.emit('save-list');
-        });
         loadBtn.addEventListener('click', () => {
             ee.emit('load-list');
         });
@@ -288,4 +302,42 @@ class SavedListView {
         this.wrapper.appendChild(loadBtn);
 
     }
+
+    renderLoadedLists(listsArr) {
+        if(!listsArr.length) return;
+        this.loadListsContainer.innerHTML = '';
+        const ul = document.createElement('ul');
+        ul.classList.add('list-group');
+
+        listsArr.forEach(el => {
+            const li = document.createElement('li');
+            li.classList.add('list-group-item');
+
+            li.innerText = el.listName;
+            ul.appendChild(li);
+        })
+
+        this.loadListsContainer.appendChild(ul);
+    }
+
+    onSaveHandler() {
+        const listName = this.saveInput.value;
+        if(!listName.length) return;
+        ee.emit('save-list', listName);
+        this.saveInput.value = '';
+        $('#saveModal').modal('hide');
+    }
+
+    hideButtons() {
+        this.wrapper.innerHTML = '';
+    }
+
+    selectedList(e) {      
+        if(e.target.tagName !== 'LI') return;
+        const listName = e.target.innerText;
+        
+        ee.emit('select-list', this.savedLists.find(el => el.listName == listName)._id);
+        $('#loadModal').modal('hide');
+    }
+
 }
