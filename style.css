@@ -69,6 +69,30 @@ button {
     position: fixed;
     bottom: 10px;
 }
+
 #load-lists-container li {
     cursor: pointer;
+}
+#load-lists-container {
+    min-height: 245px;
+}
+
+.date {
+    float: right;
+    font-size: 1em;
+    color: #0062cc;
+    opacity: .8;
+}
+.dropdown-item {
+    cursor: pointer;
+}
+
+#pagination {
+    display: block;
+    max-width: 300px;
+    margin: auto;
+    padding-bottom: 10px;
+}
+#pagination li {
+    display: inline-block;
 }

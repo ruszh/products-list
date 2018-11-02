@@ -1,7 +1,7 @@
 class AuthService {
     verification() {
         const token = localStorage.getItem('token');
-        return fetch('http://localhost:3003/user/verify', {
+        return fetch(`${CONFIG.url}user/verify`, {
                     method: 'GET',
                     headers: {
                         'x-access-token': token
@@ -13,7 +13,7 @@ class AuthService {
         let email = user.email.toLowerCase();
         let password = user.password.toLowerCase();
         
-        return fetch('http://localhost:3003/user/signin', {
+        return fetch(`${CONFIG.url}user/signin`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

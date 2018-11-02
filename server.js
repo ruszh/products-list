@@ -9,7 +9,6 @@ dotenv.config();
 import user from './routes/user.route';
 import list from './routes/list.route';
 
-
 app.use((req, res, next) => {
     res.append('Access-Control-Allow-Origin', ['*']);
     res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
@@ -21,7 +20,6 @@ mongoose.connect(process.env.MONGODB_URL);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
 
 app.use('/user', user);
 app.use('/list', list);

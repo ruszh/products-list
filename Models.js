@@ -40,6 +40,10 @@ class ShopsModel {
             }
         });
     }
+    removeSelection() {
+        if(!this.shops.length) return;
+        this.shops.forEach(el => el.selected = false)
+    }
 }
 
 class ProductsModel {
@@ -70,6 +74,10 @@ class ProductsModel {
 
     getSelectedProducts() {
         return this.allProducts.filter(el => el.selected);
+    }
+    removeSelection() {
+        if(!this.allProducts.length) return;
+        this.allProducts.forEach(el => el.selected = false)
     }
     
 }

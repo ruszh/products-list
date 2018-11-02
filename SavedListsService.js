@@ -1,38 +1,36 @@
 class SavedListsService {
-    load(userId) {
-        return fetch('http://localhost:3003/list/load', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                userId
-            })
-        })
-        .then(res => res.json())
-    }
-    save(userId, list) {
-        fetch('http://localhost:3003/list/save', {
+    load(userId, page) {
+        return fetch(`${CONFIG.url}list/load`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 userId,
-                listObj: list
+                limit: CONFIG.limit,
+                page
             })
         })
-        .then(res => log(res.statusText))
-        .catch(err => log(err))
+        .then(res => res.json());
     }
-    getList(query) {
-        return fetch('http://localhost:3003/list/get', {
+    save(listObj) {
+        return fetch(`${CONFIG.url}list/save`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(listObj)
+        })
+        .then(res => res.json())        
+    }
+    getList(listId) {
+        return fetch(`${CONFIG.url}list/get`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                query
+                listId
             })
         })
         .then(res => res.json())       

@@ -7,7 +7,8 @@ class Controller {
         shopsModel, 
         productsModel,
         authView,
-        savedListView
+        savedListView,
+        paginationView
                 ) {        
             this.shopsModel = shopsModel;
             this.productsModel = productsModel;
@@ -17,40 +18,39 @@ class Controller {
             this.productsView = productsView;
             this.productSearchView = productSearchView;
             this.savedListView = savedListView;
+            this.paginationView = paginationView;
+
 
             this.authView = authView;
                     
-            window.addEventListener('load', () => {                
-                this.authView.showSpinner();                 
-                authService.verification()                
-                            .then(res => {
-                                log(res)
-                                this.authView.hideSpinner();
-                                if(res.user.email && res.user._id) {                        
-                                    this.login({
-                                        email : res.user.email,
-                                        userId: res.user._id
-                                    });
-                                    return;
-                                }
-                                this.authView.showRegisterForm();                                    
-                            })
-                            .catch(err => {
-                                log(err);
-                                this.authView.showRegisterForm()
-                            });                
-
-                
+            window.addEventListener('load', async () => {                
+                this.authView.showSpinner(); 
+                try {
+                    const verification = await authService.verification();    
+                    
+                    if(verification.user.email && verification.user._id) {
+                        this.authView.hideSpinner();
+                        return this.login({
+                            email : verification.user.email,
+                            userId: verification.user._id
+                        })
+                    }
+                    this.authView.showRegisterForm();
+                }  catch(err) {
+                    log(err);
+                    this.authView.hideSpinner();
+                    this.authView.showRegisterForm()
+                }            
             });
             ee.on('submit', this.onLoginHandler, this);
             ee.on('save-list', this.onSaveListHandler, this);
             ee.on('load-list', this.onLoadListsHandler, this);
             ee.on('select-list', this.onSelectListHandler, this);
-            
+            ee.on('sort', this.sortHandler, this);
+            ee.on('select-page', this.onLoadListsHandler, this);
     }
 
-    initialize() {  
-        
+    initialize() {
         
         document.querySelector('#app-container').style.display = '';
         
@@ -75,15 +75,8 @@ class Controller {
 
         this.savedListView.render();
 
-
-
     }
-
-    fetchData() {
-        return fetch('http://localhost:3003/user/getlists')
-                .then(res => res.json())                
-    }
-
+    
     logout() {
         document.getElementById('app-container').style.display = 'none';
 
@@ -100,26 +93,26 @@ class Controller {
         this.authView.showRegisterForm();   
         this.authView.authUser = null;    
         this.savedListView.hideButtons();
+        this.removeAllSelections();
     }
 
-    login(user) {
-        this.fetchData()
-            .then(res => {
-                this.shopsModel.shops = res.shops;
-                this.productsModel.allProducts = res.products;
-                this.authView.authUser = user;     
+    async login(user) {
+        const data = await initService.fetchData();
 
-                this.authView.renderLoginUserData();
-                this.authView.validForm();
-                this.authView.hideRegisterForm();
+        if(data) {
+            this.shopsModel.shops = data.shops;
+            this.productsModel.allProducts = data.products;
+            this.authView.authUser = user;     
 
-                this.initialize();
-                this.authView.hideSpinner();
-            })
-            .catch(err => {
-                log(err);
-            });
-        
+            this.authView.renderLoginUserData();
+            this.authView.validForm();
+            this.authView.hideRegisterForm();
+
+            this.initialize();
+            this.authView.hideSpinner();
+            return;
+        }
+        log('Login error');
     }
 
     renderShops() {
@@ -138,7 +131,7 @@ class Controller {
             const selectedProducts = this.productsModel.getProductsList(selectedProductsIds);
             
             selectedProducts.forEach(el => {
-                if(!products.filter(e => e.id == el.id).length) {
+                if(!products.some(e => e.id == el.id)) {
                     el.active = false;
                     products.unshift(el);
                 } else {
@@ -163,7 +156,11 @@ class Controller {
             return;
         };
 
-        this.productSearchView.renderSearchList(allProducts.filter(el => el.name.toLowerCase().indexOf(query)!== -1));        
+        this.productSearchView.renderSearchList(
+                allProducts.filter(
+                    el => el.name.toLowerCase().indexOf(query)!== -1
+                    )
+                );        
     }
 
     onShopsSearchHandler(query) {
@@ -229,99 +226,134 @@ class Controller {
         this.renderProducts(result);        
     }    
 
+    removeAllSelections() {
+        this.productsView.selectedItems = [];
+        this.shopsView.selectedItems = [];
+        this.shopsModel.removeSelection();
+        this.productsModel.removeSelection();
+    }
+
+
     //-------------------  Authentication methods ----------------------//
     
 
-    onLoginHandler(data) {
+    async onLoginHandler(data) {
         this.authView.showSpinner();
-        authService.signin(data)
-                    .then(result => {
-                        if(result.success) {
-                            log(result)
-                            localStorage.setItem('token', result.token);
-                            const user = {
-                                userId: result.data._id,
-                                email: result.data.email
-                            }                        
-                            this.login(user);                            
-                            return;        
-                        }
-                        this.authView.invalidForm();
-                    })
-                    .catch(err => console.log(err)); 
+        
+        const result = await authService.signin(data);
+        if(result.success) {
+            log(result)
+            localStorage.setItem('token', result.token);
+            const user = {
+                userId: result.data._id,
+                email: result.data.email
+            }
+            this.login(user);
+            return;        
+        }
+        log(result)
+        this.authView.invalidForm();
+        
     }
 
     //--------------------------- Saved list methods --------------------------///
 
 
     onSaveListHandler(listName) {  
+        if(!listName) return;
+        const userId = this.authView.authUser.userId;
+        
         const listObj = {
+            userId,
             listName,
             list: {
                 shops: this.shopsView.selectedItems,
                 products: this.productsView.selectedItems
-            }
+            },
+            date: new Date().toString()
         };
-        //log(listObj);
         this.saveList(listObj);
     }
 
-    saveList(list) {
-        if(!list) return;
-        const userId = this.authView.authUser.userId;
-    
-        listsService.save(userId, list);
-            
-    }
+    async saveList(listObj) {
+        if(!listObj) return;
 
-    onLoadListsHandler() {
-        const userId = this.authView.authUser.userId;
-    
-        listsService.load(userId)
-            .then(res => {
-                log(res.lists)
-                this.savedListView.savedLists = res.lists;
-                this.savedListView.renderLoadedLists(res.lists);            
-            })
-            .catch(err => log(err))
-    }
-
-    onSelectListHandler(selectedList) {
-        const query = {
-            listId: selectedList, 
-            userId: this.authView.authUser.userId
+        const result = await listsService.save(listObj);
+        if(result.fail) {
+            this.savedListView.isInvalid();
+            return;
         }
-        
-        listsService.getList(query)
-                    .then(res => {
-                        const selectedShops = res.list.shops;
-                        const selectedProducts = res.list.products;
-                        
-                        this.shopsView.selectedItems = [];
-                        this.productsView.selectedItems = [];
-                        
-                        selectedShops.forEach(el => {          
-
-                            this.shopsModel.selectShop(el);
-                            this.filterProductsByShops(el);
-                        });
-
-                        selectedProducts.forEach(el => {           
-
-                            this.productsView.select(el);
-                            this.productsModel.selectProduct(el);
-
-                            this.shopsView.render(this.shopsModel.filterShops(this.productsView.select()));
-
-                            this.renderProducts();
-                        });
-
-                    })
-                    .catch(err => log(err))
-        
-        
-      
+        log(result);
+        this.savedListView.isValid();            
     }
+
+    
+
+    async onLoadListsHandler(page) {
+        const userId = this.authView.authUser.userId;
+        if(!page) {
+            const page = 1;
+        }
+        try {
+            const result = await listsService.load(userId, page);
+            log(result);
+            this.savedListView.savedLists = result.lists;
+            this.savedListView.renderLoadedLists(result.lists);
+            this.paginationView.render(result.pages, +result.current)
+        } catch (err) {
+            log(err)
+        }
+    }
+
+    async onSelectListHandler(listId) {       
+        try {
+            const result = await listsService.getList(listId);
+            this.removeAllSelections();
+            const selectedShops = result.list.shops;
+            const selectedProducts = result.list.products;
+                                    
+            selectedShops.forEach(el => {
+                this.shopsModel.selectShop(el);
+                this.filterProductsByShops(el);
+            });
+    
+            selectedProducts.forEach(el => {
+                this.productsView.select(el);
+                this.productsModel.selectProduct(el);
+    
+                this.shopsView.render(this.shopsModel.filterShops(this.productsView.select()));
+    
+                this.renderProducts();
+            });   
+
+        } catch (err) {
+            log(err);
+        }        
+    }
+
+    sortHandler(value) {        
+        this.sortList(value.toLowerCase());
+    }
+    
+    sortList(by) {
+        const list = this.savedListView.savedLists;
+        switch(by) {
+            case 'name':                
+                this.savedListView.renderLoadedLists(list.sort(
+                    (a, b) => a.listName.toLowerCase() > b.listName.toLowerCase()
+                    ));
+                break;
+            case 'date':
+                this.savedListView.renderLoadedLists(list.sort(
+                    (a, b) => new Date(a.date) - new Date(b.date)
+                    ));
+                break;
+            default: 
+                return;
+        }
+    }
+
+    
 
 }
 

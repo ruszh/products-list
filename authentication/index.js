@@ -15,12 +15,11 @@ const pool = new Pool({
 
 //--------------- Authentication methoods --------------------------------//
 
-export function signin(req, res) {
-    if(req.body.userId) {        
-        res.send('Request with user ID, token authentication works!YEEeeeaahhh %)')
-    }
-    User.findOne({ email: req.body.email })        
-        .then((user) => {
+export async function signin(req, res) {    
+    try {
+        const user = await User.findOne({ email: req.body.email });
+        
+        if(user) {
             bcrypt.compare(req.body.password, user.password, (err, result) => {
                 if(err) {
                     return res.status(401).json({
@@ -46,16 +45,19 @@ export function signin(req, res) {
                     failed: 'Unauthorized Access'
                 });
             });
-        })
-        .catch(err => {
-            res.status(500).json({
-                error: "Something goes wrong"
-            });
+    
+        }
+    } catch(err) {
+        res.status(500).json({
+            error: "Something goes wrong"
         });
+    }
+    
+      
 }
 
 export function signup(req, res) {
-    bcrypt.hash(req.body.password, 10, (err, hash) => {
+    bcrypt.hash(req.body.password, 10, async (err, hash) => {
         if(err) {
             return res.status(500).json({
                 error: err
@@ -66,35 +68,39 @@ export function signup(req, res) {
                 email: req.body.email,
                 password: hash
             });
-            user.save().then((result) => {
+
+            try {
+                const result = await user.save();
+                
                 console.log(result);
-                res.status(200).json({
+                return res.status(200).json({
                     success: 'New user has been created'
-                });
-            }).catch(err => {
+                });                
+
+            } catch(err) {
                 res.status(500).json({
                     error: err
                 });
-            });
+            }            
         }
     });
 }
 
 export function verifyUser(req, res) {    
-    jwt.verify(req.headers['x-access-token'], process.env.JWTSECRET, (err, decoded) => {
+    jwt.verify(req.headers['x-access-token'], process.env.JWTSECRET, async (err, decoded) => {
         if(err) {
             console.log(err.message)
             res.json({
                 error: 'token is not valid'
             })
         } else {
-            User.findOne({ _id: decoded._id})
-                .then(user => {                    
-                    res.json({
-                        user: user
-                    })
-                })                
-                .catch(err => console.log(err))
+            const user = await User.findOne({ _id: decoded._id});
+            if(user) {
+                return res.json({
+                    user
+                });
+            }      
+            return ;   
         }
     })
 }

@@ -175,7 +175,8 @@ class AuthenticationView {
     constructor(targetId) {
         this.container = document.getElementById(targetId);
         this.form = this.container.querySelector('form');
-        this.spinner = document.querySelector('#spinner');
+        this.spinner = document.querySelector('#spinner');        
+
         this.authUser;        
 
         this.form.addEventListener('submit', (e) => this._submitHandler(e));
@@ -183,12 +184,12 @@ class AuthenticationView {
 
     showSpinner() {
         this.spinner.style.display = 'block'
-        log('show spinner')
+        
     }
 
     hideSpinner() {
         this.spinner.style.display = 'none'
-        log('hide spinner')
+        
     }
 
     renderLoginUserData() {
@@ -262,16 +263,19 @@ class SavedListView {
     constructor(targetId) {
         this.wrapper = document.getElementById(targetId);
         this.saveInput = document.getElementById('save-input');
-        this.saveButton = document.getElementById('save-button');
+        this.saveForm = document.getElementById('save-form');
         this.loadListsContainer = document.getElementById('load-lists-container');
+        this.dropdownMenu = document.getElementById('dropdown-menu');
 
         this.savedLists;
 
-        this.saveButton.addEventListener('click', () => {
+        this.saveForm.addEventListener('submit', (e) => {
+            e.preventDefault();
             this.onSaveHandler();
-
         });
-
+        this.dropdownMenu.addEventListener('click', (e) => {
+            this._sortHandler(e);
+        })
         this.loadListsContainer.addEventListener('click', (e) => {
             this.selectedList(e);
         })
@@ -280,7 +284,7 @@ class SavedListView {
     render() {
         this.wrapper.innerHTML = '';
         const saveBtn = document.createElement('button');
-        const loadBtn = document.createElement('button');
+        const loadBtn = document.createElement('button');        
 
         saveBtn.innerText = 'Save';
         loadBtn.innerText = 'Load';
@@ -304,16 +308,26 @@ class SavedListView {
     }
 
     renderLoadedLists(listsArr) {
-        if(!listsArr.length) return;
         this.loadListsContainer.innerHTML = '';
+        if(!listsArr.length) return;
         const ul = document.createElement('ul');
         ul.classList.add('list-group');
-
+        
         listsArr.forEach(el => {
             const li = document.createElement('li');
+            const dateWrapper = document.createElement('span');
+            const listName = document.createElement('span');
+            
             li.classList.add('list-group-item');
+            li.dataset.id = el._id;
 
-            li.innerText = el.listName;
+            dateWrapper.classList.add('date');
+            dateWrapper.innerText = el.date.split(' ').slice(1, 5).join(' ');
+            listName.classList.add('list-name');
+            listName.innerText = el.listName;
+            
+            li.appendChild(listName);
+            li.appendChild(dateWrapper);
             ul.appendChild(li);
         })
 
@@ -323,9 +337,7 @@ class SavedListView {
     onSaveHandler() {
         const listName = this.saveInput.value;
         if(!listName.length) return;
-        ee.emit('save-list', listName);
-        this.saveInput.value = '';
-        $('#saveModal').modal('hide');
+        ee.emit('save-list', listName);        
     }
 
     hideButtons() {
@@ -333,11 +345,69 @@ class SavedListView {
     }
 
     selectedList(e) {      
-        if(e.target.tagName !== 'LI') return;
-        const listName = e.target.innerText;
+        let listId;
+        if(e.target.tagName === 'LI') {
+            listId = e.target.dataset.id;             
+        } else {
+            listId = e.target.parentNode.dataset.id;
+        }        
+
+        if(!listId) return;
         
-        ee.emit('select-list', this.savedLists.find(el => el.listName == listName)._id);
+        ee.emit('select-list', listId);
         $('#loadModal').modal('hide');
     }
 
+    isInvalid() {
+        this.saveInput.classList.add('is-invalid');
+    }
+
+    isValid() {
+        this.saveInput.classList.remove('is-invalid');
+        this.saveInput.value = '';
+        $('#saveModal').modal('hide');
+    }
+
+    _sortHandler(e) {        
+        ee.emit('sort', e.target.innerText)
+    }
+
+}
+
+class PaginationView {
+    constructor() {
+        this.pagination = document.getElementById('pagination');
+        this.pagination.addEventListener('click', (e) => {
+            this.selectedPage(e);
+        })
+        
+    }
+
+    render(pages, current) {
+        this.pagination.innerHTML = '';
+        this.pagination.style.width = `${35 * pages}px`;  
+        for(let i = 0; i < pages; i++) {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            const num = i + 1;
+            
+            a.classList.add('page-link');
+            li.classList.add('page-item');
+            if(num == current) {
+                li.classList.add('active');
+            }
+            a.innerText = num;
+            a.dataset.page = num;
+
+            li.appendChild(a);
+            this.pagination.appendChild(li);
+        }    
+        
+    }
+
+    selectedPage(e) {        
+        if(e.target.tagName !== "A") return;
+        
+        ee.emit('select-page', e.target.dataset.page);
+    }
 }

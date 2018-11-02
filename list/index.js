@@ -1,83 +1,68 @@
 import mongoose from 'mongoose';
 import List from '../models/list.model';
 
-//req.body.list = { 
-//     listName: 'foo', 
-//     list: { shops: [1,2,3], products: [1,2,3] } 
-// }
-
-
-
-export function save(req, res) {
-    List.findOne({ userId: req.body.userId })
-                .then(userList => {
-                    if(!userList) {
-                        if(req.body.userId && req.body.list) {
-                            const listsArr = [];
-                            listsArr.push(req.body.list);                            
-                            const list = new List({
-                                _id: new mongoose.Types.ObjectId(),
-                                userId: req.body.userId,
-                                lists: listsArr
-                            });
-                            list.save().then((result) => {
-                                console.log(result);
-                                res.status(200).json({
-                                    success: 'New list has been created'
-                                });
-                            }).catch(err => {
-                                res.status(500).json({
-                                    error: err
-                                });
-                            });
-                        }
-                        return;
-                    } else {
-                        const newList = {
-                            _id: new mongoose.Types.ObjectId(),
-                            listName: req.body.listObj.listName,
-                            list: req.body.listObj.list
-                        }
-                        userList.lists.push(newList)                        
-                        userList.save((err, list) => {
-                            if(err) throw err;
-                            res.status(200).json({
-                                status: 'List saved',
-                                list: list
-                            });
-                        });
-                    }
-                })
-                .catch(err => console.log(err));
-}
-
-export function load(req, res) {
-    List.findOne({ userId: req.body.userId })
-            .then(userList => {
-                if(!userList) {
-                    res.send('Not find')
-                } else {
-                    res.status(200).json({
-                        lists: userList.lists.map(el => {
-                            return { listName: el.listName, _id: el._id };
-                        })
-                    })
-                }
-            })
-            .catch(err => {
-                res.status(500).json({
-                    error: err
-                });
-            });
-}
-
-export function getList(req, res) {
-    const query = req.body.query;
-    List.findOne({ userId: query.userId })        
-        .then(listObj => {            
-            if(!listObj) return;
-            const list = listObj.lists.find(el => el._id == query.listId);
-            res.status(200).json(list)
+export async function save(req, res) {
+    const list = await List.findOne({ listName: req.body.listName });
+    if(list) {
+        return res.status(500).json({
+            fail: "List with the same name exists"
         })
-        .catch(err => console.log(err))
+    }
+
+    const newList = new List({
+        _id: new mongoose.Types.ObjectId(),
+        userId: req.body.userId,
+        listName: req.body.listName,
+        list: req.body.list,
+        date: req.body.date 
+    });
+
+    const result = await newList.save();
+    
+    if(result) {
+        console.log(result);
+        return res.status(200).json({
+                success: 'New list has been created'
+            });
+    }
+    
+    return res.status(500).json({
+                error: 'err'
+            });        
+}
+
+export async function load(req, res) { 
+    const limit = req.body.limit;
+    const items = await List.find({ userId: req.body.userId }).countDocuments();
+    const pages = Math.ceil(items / limit);
+    const page = Number(req.body.page) || 1;
+
+    const skip = page == 1 ? 0 : (page - 1) * limit;
+
+    const lists = await List.find({ userId: req.body.userId },
+                                  { listName: 1, _id: 1, date: 1 })
+                                  .skip(skip)
+                                  .limit(limit);
+    
+    
+    if(!lists) {
+        return res.send('Not found')
+    }
+
+    return res.status(200).json({
+                items,
+                pages,
+                current: page,
+                lists
+           });
+}
+
+export async function getList(req, res) { 
+    const list = await List.findOne({ _id: req.body.listId });
+    
+    if(list) {
+        return res.status(200).json(list); 
+    }      
+         
+    return res.status(500);
 }
