@@ -1,6 +1,6 @@
 const log = console.log;
 
-function mergeArrays(arrs) {       
+function mergeArrays(arrs) {
     return [...new Set(arrs.reduce((a, b) => [...a, ...b], []))];
 }
 
@@ -15,7 +15,7 @@ const initService = new InitService();
 
 const productsModel = new ProductsModel();
 const shopsModel = new ShopsModel();
-
+``
 const shopSearchView = new SearchView('shopsInput');
 const productSearchView = new SearchView('productsInput');
 
@@ -26,11 +26,11 @@ const savedListView = new SavedListView('savedList');
 const paginationView = new PaginationView();
 
 const controller = new Controller(
-    shopSearchView, 
-    shopsView, 
-    productsView, 
-    productSearchView, 
-    shopsModel, 
+    shopSearchView,
+    shopsView,
+    productsView,
+    productSearchView,
+    shopsModel,
     productsModel,
     authView,
     savedListView,

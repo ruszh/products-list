@@ -58,9 +58,9 @@ button {
 }
 
 .saved-list-wrapper {
-    
+
     text-align: center;
-    
+
 }
 .saved-list-wrapper .btn{
     margin: 0 5px;
@@ -89,10 +89,15 @@ button {
 
 #pagination {
     display: block;
-    max-width: 300px;
+    width: 350px;
     margin: auto;
-    padding-bottom: 10px;
+    padding:  10px 0;
+    text-align: center;
 }
 #pagination li {
     display: inline-block;
+    user-select: none;
+}
+#pagination a {
+    width: 44px;
 }

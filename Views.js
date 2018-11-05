@@ -8,14 +8,14 @@ class SearchView {
     }
 
     initListeners(targetId) {
-        this.inputElement.addEventListener('keydown', _.debounce(            
+        this.inputElement.addEventListener('keydown', _.debounce(
             (e) => this._onSearch(e, `search-${targetId}`),
             1000, { leading: false, trailing: true }
         ));
 
         this.searchResultContainer.addEventListener('click',
             (e) => this._onSelect(e, `select-${targetId}`)
-        );        
+        );
     }
 
     _onSearch(e, eventName) {
@@ -32,7 +32,7 @@ class SearchView {
         this.inputElement.type = "text";
         this.inputElement.className = "form-control search-input";
         this.inputElement.placeholder = "Search";
-        
+
         this.inputContainer.appendChild(this.inputElement);
     }
 
@@ -49,18 +49,18 @@ class SearchView {
 
             this.searchResultContainer.appendChild(item);
         });
-        
+
         this.searchResultContainer.style.display = 'block';
         this.inputContainer.appendChild(this.searchResultContainer);
-        
+
     }
-    
+
     hideSearchList() {
         this.searchResultContainer.innerHTML = '';
         this.inputElement.value = '';
         this.searchResultContainer.style.display = 'none';
     }
-    
+
 }
 
 class ListView {
@@ -69,31 +69,31 @@ class ListView {
         this.eventName = `select-${targetId}`;
 
         this.selectedItems = [];
-        
+
     }
 
-    render(arr) {      
+    render(arr) {
         if(this.selectedItems.length) {
             arr.sort(sortByCheck);
-            
+
         } else {
             arr.sort(sortByName);
         }
-        
+
         this.listContainer.innerHTML = '';
 
         const ul = document.createElement('ul');
-        
+
         const btn = document.createElement('button');
 
         btn.className = 'btn btn-light';
         btn.innerText = 'check/uncheck all';
-        btn.onclick = this._toggleAll.bind(this);  
+        btn.onclick = this._toggleAll.bind(this);
 
         this.listContainer.appendChild(btn);
 
         ul.className = 'list-group';
-        
+
         arr.forEach(el => {
             const li = document.createElement('li');
             const checkbox = document.createElement('input');
@@ -107,7 +107,7 @@ class ListView {
             if(this.selectedItems.indexOf(el.id) !== -1) checkbox.checked = true;
 
             li.dataset.id = el.id;
- 
+
             checkbox.addEventListener('change', (e) => this._onSelect(e));
 
             li.appendChild(checkbox);
@@ -121,15 +121,15 @@ class ListView {
 
     _toggleAll() {
         const checkboxes = this.listContainer.querySelectorAll('.checkbox');
-        let notSelected = 0; 
+        let notSelected = 0;
 
-        const change = new Event('change')  
+        const change = new Event('change')
         checkboxes.forEach(el => {
             if(!el.checked) notSelected++;
         });
         checkboxes.forEach(el => {
             if(notSelected > 0) {
-                if(el.checked) return;              
+                if(el.checked) return;
                 el.dispatchEvent(change);
             } else {
                 el.dispatchEvent(change);
@@ -143,12 +143,12 @@ class ListView {
     }
 
     select(id) {
-        
-        const selected = this.selectedItems;   
+
+        const selected = this.selectedItems;
 
         if(!id) return selected;
         if(selected.indexOf(id) !== -1) {
-            selected.splice(selected.indexOf(id), 1);  
+            selected.splice(selected.indexOf(id), 1);
             return;
         }
         selected.push(id);
@@ -156,17 +156,17 @@ class ListView {
         return selected;
     }
 
-    
+
 
     getSelectedItems() {
         const checkboxes = this.listContainer.querySelectorAll('.checkbox');
-        
+
         checkboxes.forEach((el) => {
             if(el.checked) {
                 this.selectedItems.push(+el.parentNode.dataset.id)
             }
         });
-        
+
         return selectedItemsArr;
     }
 }
@@ -175,21 +175,21 @@ class AuthenticationView {
     constructor(targetId) {
         this.container = document.getElementById(targetId);
         this.form = this.container.querySelector('form');
-        this.spinner = document.querySelector('#spinner');        
+        this.spinner = document.querySelector('#spinner');
 
-        this.authUser;        
+        this.authUser;
 
         this.form.addEventListener('submit', (e) => this._submitHandler(e));
     }
 
     showSpinner() {
         this.spinner.style.display = 'block'
-        
+
     }
 
     hideSpinner() {
         this.spinner.style.display = 'none'
-        
+
     }
 
     renderLoginUserData() {
@@ -208,22 +208,22 @@ class AuthenticationView {
         logoutBtn.className = 'btn float-right btn-outline-primary';
         logoutBtn.innerText = 'logout';
         logoutBtn.addEventListener('click', () => this._logoutHandler());
-        
+
         wrapper.appendChild(logoutBtn);
         wrapper.appendChild(userData);
 
         document.body.appendChild(wrapper);
-        
+
     }
 
 
-    hideRegisterForm() {              
+    hideRegisterForm() {
         this.container.style.display = 'none';
         this.renderLoginUserData()
     }
 
-    showRegisterForm() {        
-        this.container.style.display = 'block';        
+    showRegisterForm() {
+        this.container.style.display = 'block';
         document.getElementById('login-wrapper').remove();
     }
 
@@ -232,7 +232,7 @@ class AuthenticationView {
         const form = e.target;
         const email = form.elements[0].value;
         const password = form.elements[1].value
-        
+
         if(!email && !password) return;
 
         const data = {
@@ -249,14 +249,14 @@ class AuthenticationView {
 
     invalidForm() {
         this.form.elements[0].classList.add('is-invalid');
-        this.form.elements[1].classList.add('is-invalid');     
+        this.form.elements[1].classList.add('is-invalid');
     }
 
     validForm() {
         this.form.elements[0].classList.remove('is-invalid');
         this.form.elements[1].classList.remove('is-invalid');
     }
-    
+
 }
 
 class SavedListView {
@@ -285,7 +285,7 @@ class SavedListView {
     render() {
         this.wrapper.innerHTML = '';
         const saveBtn = document.createElement('button');
-        const loadBtn = document.createElement('button');        
+        const loadBtn = document.createElement('button');
 
         saveBtn.innerText = 'Save';
         loadBtn.innerText = 'Load';
@@ -313,7 +313,7 @@ class SavedListView {
         if(!listsArr.length) return;
         const ul = document.createElement('ul');
         ul.classList.add('list-group');
-       
+
         listsArr.forEach(el => {
             const li = document.createElement('li');
             const dateWrapper = document.createElement('span');
@@ -328,7 +328,7 @@ class SavedListView {
             //dateWrapper.innerText = el.date;
             listName.classList.add('list-name');
             listName.innerText = el.listName;
-            
+
             li.appendChild(listName);
             li.appendChild(dateWrapper);
             ul.appendChild(li);
@@ -340,23 +340,23 @@ class SavedListView {
     onSaveHandler() {
         const listName = this.saveInput.value;
         if(!listName.length) return;
-        ee.emit('save-list', listName);        
+        ee.emit('save-list', listName);
     }
 
     hideButtons() {
         this.wrapper.innerHTML = '';
     }
 
-    selectedList(e) {      
+    selectedList(e) {
         let listId;
         if(e.target.tagName === 'LI') {
-            listId = e.target.dataset.id;             
+            listId = e.target.dataset.id;
         } else {
             listId = e.target.parentNode.dataset.id;
-        }        
+        }
 
         if(!listId) return;
-        
+
         ee.emit('select-list', listId);
         $('#loadModal').modal('hide');
     }
@@ -371,7 +371,7 @@ class SavedListView {
         $('#saveModal').modal('hide');
     }
 
-    _sortHandler(e) {        
+    _sortHandler(e) {
         ee.emit('sort', e.target.innerText)
     }
 
@@ -382,36 +382,130 @@ class PaginationView {
         this.pagination = document.getElementById('pagination');
         this.pagination.addEventListener('click', (e) => {
             this.selectedPage(e);
-        })
-        
+        });
+        this.pagesArr = [];
+        this.page;
     }
 
-    render(pages, current) {
-        this.pagination.innerHTML = '';
-        this.pagination.style.width = `${35 * pages}px`;  
-
+    setPages(pages, current) {
+        this.pagesArr = [];
         for(let i = 0; i < pages; i++) {
+            this.pagesArr.push(i + 1);
+        }
+
+        if(pages < 5) {
+            this.render(this.pagesArr);
+            return;
+        } else if (current < 3){
+            this.render(this.pagesArr.slice(0, 5))
+        } else if(current > pages - 3) {
+            this.render(this.pagesArr.slice(pages - 5, pages))
+        } else {
+            this.render(this.pagesArr.slice(current - 3, current + 2))
+        }
+
+    }
+
+    render(pages) {
+        this.pagination.innerHTML = '';
+        this.pagination.style.width = `${35 * pages}px`;
+
+        const prevLi = document.createElement('li');
+        const prevA = document.createElement('a');
+        prevLi.classList.add('page-item');
+        prevA.classList.add('page-link');
+        prevA.innerText = '<<';
+        prevA.dataset.page = 'prev';
+
+        if(this.page === 1) prevLi.classList.add('disabled');
+
+
+        prevLi.appendChild(prevA);
+        this.pagination.appendChild(prevLi);
+
+        if(this.page > 4) {
+            const firstLi = document.createElement('li');
+            const firstA = document.createElement('a');
+            firstLi.classList.add('page-item');
+            firstA.classList.add('page-link');
+            firstA.innerText = '...';
+            firstA.dataset.page = 'first';
+
+            firstLi.appendChild(firstA);
+            this.pagination.appendChild(firstLi);
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        // for(let i = 0; i < pages; i++) {
+        //     const li = document.createElement('li');
+        //     const a = document.createElement('a');
+        //     const num = i + 1;
+
+        //     a.classList.add('page-link');
+        //     li.classList.add('page-item');
+        //     if(num == current) {
+        //         li.classList.add('active');
+        //     }
+        //     a.innerText = num;
+        //     a.dataset.page = num;
+
+        //     li.appendChild(a);
+        //     fragment.appendChild(li);
+
+        // }
+        pages.forEach(el => {
             const li = document.createElement('li');
             const a = document.createElement('a');
-            const num = i + 1;
 
             a.classList.add('page-link');
             li.classList.add('page-item');
-            if(num == current) {
+            if(el == this.page) {
                 li.classList.add('active');
             }
-            a.innerText = num;
-            a.dataset.page = num;
+            a.innerText = el;
+            a.dataset.page = el;
 
             li.appendChild(a);
-            this.pagination.appendChild(li);
-        }    
-        
+            fragment.appendChild(li);
+        })
+        this.pagination.appendChild(fragment);
+
+        if(this.page > this.pagesArr.length - 5) {
+            const lastLi = document.createElement('li');
+            const lastA = document.createElement('a');
+            lastLi.classList.add('page-item');
+            lastA.classList.add('page-link');
+            lastA.innerText = '...';
+            lastA.dataset.page = 'last';
+
+            lastLi.appendChild(lastA);
+            this.pagination.appendChild(lastLi);
+        }
+
+        const nextLi = document.createElement('li');
+        const nextA = document.createElement('a');
+
+        nextLi.classList.add('page-item');
+        nextA.classList.add('page-link');
+        nextA.innerText = '>>';
+        if(this.pagesArr.length === this.page) nextLi.classList.add('disabled');
+
+        nextA.dataset.page = 'next';
+
+        nextLi.appendChild(nextA);
+        this.pagination.appendChild(nextLi);
+
     }
 
-    selectedPage(e) {        
+    selectedPage(e) {
         if(e.target.tagName !== "A") return;
-        const page = e.target.dataset.page;
+        const value = e.target.dataset.page;
+        if(value === 'prev' || value === 'next') {
+            ee.emit('select-page', value);
+            return;
+        }
+        const page = Number(value);
 
         if(page === this.page) return;
         this.page = page;
