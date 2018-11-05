@@ -6,10 +6,10 @@ active boolean,
 selected boolean);
 
 INSERT INTO shops (id, name, productsIds, active, selected) VALUES
-(1, '', [1,2,3,4,5,6,7,8,9], TRUE, FALSE),
-(2, '', [1, 2, 3, 5, 6, 7, 8, 9, 10, 11], TRUE, FALSE),
-(3, '', [4, 5, 6, 7, 8, 9, 11], TRUE, FALSE),
-(4, '', [1, 2, 3, 4, 5, 7, 8, 9, 10], TRUE, FASLE);
+(1, 'АТБ', ARRAY[1,2,3,4,5,6,7,8,9], TRUE, FALSE),
+(2, 'Сильпо', ARRAY[1, 2, 3, 5, 6, 7, 8, 9, 10, 11], TRUE, FALSE),
+(3, 'Класс', ARRAY[4, 5, 6, 7, 8, 9, 11], TRUE, FALSE),
+(4, 'Метро', ARRAY[1, 2, 3, 4, 5, 7, 8, 9, 10], TRUE, FASLE);
 
 CREATE TABLE products (                  
 id integer PRIMARY KEY,

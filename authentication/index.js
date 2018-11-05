@@ -113,7 +113,7 @@ export function getLists(req, res) {
         if(err) throw err;
         client.query('SELECT * FROM shops', (error, result) => {
             if(error) {
-                console.log(error)
+                console.error(error)
             } else {
                 data.shops = result.rows;
             }

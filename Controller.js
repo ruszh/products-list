@@ -20,6 +20,8 @@ class Controller {
             this.savedListView = savedListView;
             this.paginationView = paginationView;
 
+            this.sortBy = 'listName';
+
 
             this.authView = authView;
                     
@@ -94,7 +96,12 @@ class Controller {
         this.authView.authUser = null;    
         this.savedListView.hideButtons();
         this.removeAllSelections();
+        this.productsModel.allProducts = [];
+        this.shopsModel.shops = [];
+        this.savedListView.savedLists = [];
+        
     }
+    
 
     async login(user) {
         const data = await initService.fetchData();
@@ -270,7 +277,7 @@ class Controller {
                 shops: this.shopsView.selectedItems,
                 products: this.productsView.selectedItems
             },
-            date: new Date().toString()
+            date: Date.now()
         };
         this.saveList(listObj);
     }
@@ -284,24 +291,26 @@ class Controller {
             return;
         }
         log(result);
-        this.savedListView.isValid();            
+        this.savedListView.isValid();
     }
 
     
 
     async onLoadListsHandler(page) {
         const userId = this.authView.authUser.userId;
+        
         if(!page) {
             const page = 1;
         }
         try {
-            const result = await listsService.load(userId, page);
+            const result = await listsService.load(userId, page, this.sortBy);
             log(result);
+            this.savedListView.page = Number(result.current);
             this.savedListView.savedLists = result.lists;
             this.savedListView.renderLoadedLists(result.lists);
-            this.paginationView.render(result.pages, +result.current)
+            this.paginationView.render(result.pages, this.savedListView.page)
         } catch (err) {
-            log(err)
+            console.error(err)
         }
     }
 
@@ -311,7 +320,7 @@ class Controller {
             this.removeAllSelections();
             const selectedShops = result.list.shops;
             const selectedProducts = result.list.products;
-                                    
+            
             selectedShops.forEach(el => {
                 this.shopsModel.selectShop(el);
                 this.filterProductsByShops(el);
@@ -336,17 +345,21 @@ class Controller {
     }
     
     sortList(by) {
-        const list = this.savedListView.savedLists;
+        // const list = this.savedListView.savedLists;
         switch(by) {
-            case 'name':                
-                this.savedListView.renderLoadedLists(list.sort(
-                    (a, b) => a.listName.toLowerCase() > b.listName.toLowerCase()
-                    ));
+            case 'name':    
+                this.sortBy = 'listName';     
+                this.onLoadListsHandler(this.savedListView.page);     
+                // this.savedListView.renderLoadedLists(list.sort(
+                //     (a, b) => a.listName.toLowerCase() > b.listName.toLowerCase()
+                //     ));
                 break;
             case 'date':
-                this.savedListView.renderLoadedLists(list.sort(
-                    (a, b) => new Date(a.date) - new Date(b.date)
-                    ));
+                this.sortBy = 'date';
+                this.onLoadListsHandler(this.savedListView.page);
+                // this.savedListView.renderLoadedLists(list.sort(
+                //     (a, b) => new Date(a.date) - new Date(b.date)
+                //     ));
                 break;
             default: 
                 return;

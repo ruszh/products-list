@@ -268,6 +268,7 @@ class SavedListView {
         this.dropdownMenu = document.getElementById('dropdown-menu');
 
         this.savedLists;
+        this.page = 1;
 
         this.saveForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -312,17 +313,19 @@ class SavedListView {
         if(!listsArr.length) return;
         const ul = document.createElement('ul');
         ul.classList.add('list-group');
-        
+       
         listsArr.forEach(el => {
             const li = document.createElement('li');
             const dateWrapper = document.createElement('span');
             const listName = document.createElement('span');
-            
+            const date = new Date(el.date).toString()
+
             li.classList.add('list-group-item');
             li.dataset.id = el._id;
 
             dateWrapper.classList.add('date');
-            dateWrapper.innerText = el.date.split(' ').slice(1, 5).join(' ');
+            dateWrapper.innerText = date.split(' ').slice(1, 5).join(' ');
+            //dateWrapper.innerText = el.date;
             listName.classList.add('list-name');
             listName.innerText = el.listName;
             
@@ -386,11 +389,12 @@ class PaginationView {
     render(pages, current) {
         this.pagination.innerHTML = '';
         this.pagination.style.width = `${35 * pages}px`;  
+
         for(let i = 0; i < pages; i++) {
             const li = document.createElement('li');
             const a = document.createElement('a');
             const num = i + 1;
-            
+
             a.classList.add('page-link');
             li.classList.add('page-item');
             if(num == current) {
@@ -407,7 +411,10 @@ class PaginationView {
 
     selectedPage(e) {        
         if(e.target.tagName !== "A") return;
-        
-        ee.emit('select-page', e.target.dataset.page);
+        const page = e.target.dataset.page;
+
+        if(page === this.page) return;
+        this.page = page;
+        ee.emit('select-page', this.page);
     }
 }

@@ -36,11 +36,13 @@ export async function load(req, res) {
     const items = await List.find({ userId: req.body.userId }).countDocuments();
     const pages = Math.ceil(items / limit);
     const page = Number(req.body.page) || 1;
+    const sort = req.body.sort || 'listName';
 
     const skip = page == 1 ? 0 : (page - 1) * limit;
 
     const lists = await List.find({ userId: req.body.userId },
                                   { listName: 1, _id: 1, date: 1 })
+                                  .sort({ [sort]: sort === 'listName' ? 1 : -1 })
                                   .skip(skip)
                                   .limit(limit);
     

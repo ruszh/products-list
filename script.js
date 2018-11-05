@@ -36,3 +36,12 @@ const controller = new Controller(
     savedListView,
     paginationView
 );
+
+function createRandomLists(num) {
+    for(let i = 0; i <  num; i++) {
+        const number = Math.ceil(Math.random() * 1000);
+        controller.onSaveListHandler(`RandomList#${number}`)
+    }
+}
+
+

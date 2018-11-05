@@ -5,7 +5,7 @@ const list = mongoose.Schema({
     userId: { type: String, required: true },
     listName: { type: String, required: true },
     list: { type: Object, required: true },
-    date: { type: String, required: true }
+    date: { type: Number, required: true }
 });
 
 const List = mongoose.model('List', list);

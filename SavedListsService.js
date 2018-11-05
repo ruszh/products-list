@@ -1,5 +1,5 @@
 class SavedListsService {
-    load(userId, page) {
+    load(userId, page, sort) {
         return fetch(`${CONFIG.url}list/load`, {
             method: 'POST',
             headers: {
@@ -8,7 +8,8 @@ class SavedListsService {
             body: JSON.stringify({
                 userId,
                 limit: CONFIG.limit,
-                page
+                page, 
+                sort
             })
         })
         .then(res => res.json());
