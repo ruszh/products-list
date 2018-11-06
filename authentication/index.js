@@ -2,23 +2,17 @@ import bcrypt from 'bcrypt';
 import User from '../models/user.model';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config()
 
-const pool = new Pool({
-    connectionString: process.env.PGCONFIG
-});
-
-
 
 //--------------- Authentication methoods --------------------------------//
 
-export async function signin(req, res) {    
+export async function signin(req, res) {
     try {
         const user = await User.findOne({ email: req.body.email });
-        
+
         if(user) {
             bcrypt.compare(req.body.password, user.password, (err, result) => {
                 if(err) {
@@ -30,7 +24,7 @@ export async function signin(req, res) {
                     const JWTToken = jwt.sign({
                         email: user.email,
                         _id: user._id
-                    },  
+                    },
                     process.env.JWTSECRET,
                     {
                         expiresIn: '2h'
@@ -45,15 +39,15 @@ export async function signin(req, res) {
                     failed: 'Unauthorized Access'
                 });
             });
-    
+
         }
     } catch(err) {
         res.status(500).json({
             error: "Something goes wrong"
         });
     }
-    
-      
+
+
 }
 
 export function signup(req, res) {
@@ -71,22 +65,22 @@ export function signup(req, res) {
 
             try {
                 const result = await user.save();
-                
+
                 console.log(result);
                 return res.status(200).json({
                     success: 'New user has been created'
-                });                
+                });
 
             } catch(err) {
                 res.status(500).json({
                     error: err
                 });
-            }            
+            }
         }
     });
 }
 
-export function verifyUser(req, res) {    
+export function verifyUser(req, res) {
     jwt.verify(req.headers['x-access-token'], process.env.JWTSECRET, async (err, decoded) => {
         if(err) {
             console.log(err.message)
@@ -99,34 +93,9 @@ export function verifyUser(req, res) {
                 return res.json({
                     user
                 });
-            }      
-            return ;   
+            }
+            return ;
         }
     })
 }
 
-//------------------------------------------------------------------------//
-
-export function getLists(req, res) {
-    const data = {};
-    pool.connect((err, client, done) => {
-        if(err) throw err;
-        client.query('SELECT * FROM shops', (error, result) => {
-            if(error) {
-                console.error(error)
-            } else {
-                data.shops = result.rows;
-            }
-        });
-        client.query('SELECT * FROM products', (error, result) => {
-            done();
-            if(error) {
-                console.log(error)
-            } else {
-                data.products = result.rows;
-                res.json(data);
-            }
-        });
-    });
-
-}

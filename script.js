@@ -1,14 +1,6 @@
-const log = console.log;
-
-function mergeArrays(arrs) {
-    return [...new Set(arrs.reduce((a, b) => [...a, ...b], []))];
-}
-
-const sortByName = (a, b) => a.name > b.name ? 1 : -1;
-const sortByCheck = (a, b) => a.selected === b.selected ? 0 : b.selected ? 1 : -1;
-
 
 const ee = new EventEmitter();
+
 const authService = new AuthService();
 const listsService = new SavedListsService();
 const initService = new InitService();
@@ -37,11 +29,6 @@ const controller = new Controller(
     paginationView
 );
 
-function createRandomLists(num) {
-    for(let i = 0; i <  num; i++) {
-        const number = Math.ceil(Math.random() * 1000);
-        controller.onSaveListHandler(`RandomList#${number}`)
-    }
-}
+
 
 

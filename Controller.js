@@ -94,6 +94,7 @@ class Controller {
         localStorage.removeItem('token');
         this.authView.showRegisterForm();
         this.authView.authUser = null;
+
         this.savedListView.hideButtons();
         this.removeAllSelections();
         this.productsModel.allProducts = [];
@@ -304,7 +305,7 @@ class Controller {
         }
         try {
             const result = await listsService.load(userId, page, this.sortBy);
-            log(result);
+
             this.savedListView.page = Number(result.current);
             this.paginationView.page = Number(result.current);
             this.savedListView.savedLists = result.lists;
@@ -316,20 +317,22 @@ class Controller {
     }
 
     onSelectPageHandler(page) {
-        if(page === 'prev') {
-            return this.onLoadListsHandler(this.paginationView.page - 1);
+        switch(page) {
+            case 'prev':
+                return this.onLoadListsHandler(this.paginationView.page - 1);
+                break;
+            case 'next':
+                return this.onLoadListsHandler(this.paginationView.page + 1);
+                break;
+            case 'first':
+                return this.onLoadListsHandler(1);
+                break;
+            case 'last':
+                return this.onLoadListsHandler(this.paginationView.pagesArr.length);
+                break;
+            default:
+                this.onLoadListsHandler(page);
         }
-        if(page === 'next') {
-            return this.onLoadListsHandler(this.paginationView.page + 1);
-        }
-        if(page === 'first') {
-            return this.onLoadListsHandler(1);
-        }
-        if(page === 'last') {
-            return this.onLoadListsHandler(this.paginationView.pagesArr.length);
-        }
-
-        this.onLoadListsHandler(page);
     }
 
     async onSelectListHandler(listId) {
@@ -363,21 +366,14 @@ class Controller {
     }
 
     sortList(by) {
-        // const list = this.savedListView.savedLists;
         switch(by) {
             case 'name':
                 this.sortBy = 'listName';
                 this.onLoadListsHandler(this.savedListView.page);
-                // this.savedListView.renderLoadedLists(list.sort(
-                //     (a, b) => a.listName.toLowerCase() > b.listName.toLowerCase()
-                //     ));
                 break;
             case 'date':
                 this.sortBy = 'date';
                 this.onLoadListsHandler(this.savedListView.page);
-                // this.savedListView.renderLoadedLists(list.sort(
-                //     (a, b) => new Date(a.date) - new Date(b.date)
-                //     ));
                 break;
             default:
                 return;

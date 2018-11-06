@@ -394,117 +394,61 @@ class PaginationView {
         }
 
         if(pages < 5) {
-            this.render(this.pagesArr);
-            return;
+            return this.render(this.pagesArr);
         } else if (current < 3){
-            this.render(this.pagesArr.slice(0, 5))
+            return this.render(this.pagesArr.slice(0, 5))
         } else if(current > pages - 3) {
-            this.render(this.pagesArr.slice(pages - 5, pages))
+            return this.render(this.pagesArr.slice(pages - 5, pages))
         } else {
-            this.render(this.pagesArr.slice(current - 3, current + 2))
+            return this.render(this.pagesArr.slice(current - 3, current + 2))
         }
 
     }
 
     render(pages) {
         this.pagination.innerHTML = '';
-        this.pagination.style.width = `${35 * pages}px`;
 
-        const prevLi = document.createElement('li');
-        const prevA = document.createElement('a');
-        prevLi.classList.add('page-item');
-        prevA.classList.add('page-link');
-        prevA.innerText = '<<';
-        prevA.dataset.page = 'prev';
+        if(this.page === 1) {
+            createPageItem(this.pagination, '<<', 'prev', 'disabled');
+        } else {
+            createPageItem(this.pagination, '<<', 'prev');
+        }
 
-        if(this.page === 1) prevLi.classList.add('disabled');
-
-
-        prevLi.appendChild(prevA);
-        this.pagination.appendChild(prevLi);
-
-        if(this.page > 4) {
-            const firstLi = document.createElement('li');
-            const firstA = document.createElement('a');
-            firstLi.classList.add('page-item');
-            firstA.classList.add('page-link');
-            firstA.innerText = '...';
-            firstA.dataset.page = 'first';
-
-            firstLi.appendChild(firstA);
-            this.pagination.appendChild(firstLi);
+        if(this.page > 3 && this.pagesArr.length > 5) {
+            createPageItem(this.pagination, '...', 'first');
         }
 
         const fragment = document.createDocumentFragment();
 
-        // for(let i = 0; i < pages; i++) {
-        //     const li = document.createElement('li');
-        //     const a = document.createElement('a');
-        //     const num = i + 1;
-
-        //     a.classList.add('page-link');
-        //     li.classList.add('page-item');
-        //     if(num == current) {
-        //         li.classList.add('active');
-        //     }
-        //     a.innerText = num;
-        //     a.dataset.page = num;
-
-        //     li.appendChild(a);
-        //     fragment.appendChild(li);
-
-        // }
         pages.forEach(el => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-
-            a.classList.add('page-link');
-            li.classList.add('page-item');
-            if(el == this.page) {
-                li.classList.add('active');
+            if(el === this.page) {
+                createPageItem(fragment, el, el, 'active')
+            } else {
+                createPageItem(fragment, el, el)
             }
-            a.innerText = el;
-            a.dataset.page = el;
+        });
 
-            li.appendChild(a);
-            fragment.appendChild(li);
-        })
         this.pagination.appendChild(fragment);
 
-        if(this.page > this.pagesArr.length - 5) {
-            const lastLi = document.createElement('li');
-            const lastA = document.createElement('a');
-            lastLi.classList.add('page-item');
-            lastA.classList.add('page-link');
-            lastA.innerText = '...';
-            lastA.dataset.page = 'last';
-
-            lastLi.appendChild(lastA);
-            this.pagination.appendChild(lastLi);
+        if(this.page < this.pagesArr.length - 2 && this.pagesArr.length > 5) {
+            createPageItem(this.pagination, '...', 'last');
         }
 
-        const nextLi = document.createElement('li');
-        const nextA = document.createElement('a');
-
-        nextLi.classList.add('page-item');
-        nextA.classList.add('page-link');
-        nextA.innerText = '>>';
-        if(this.pagesArr.length === this.page) nextLi.classList.add('disabled');
-
-        nextA.dataset.page = 'next';
-
-        nextLi.appendChild(nextA);
-        this.pagination.appendChild(nextLi);
-
+        if(this.pagesArr.length === this.page) {
+            createPageItem(this.pagination, '>>', 'next', 'disabled');
+        } else {
+            createPageItem(this.pagination, '>>', 'next');
+        }
     }
 
     selectedPage(e) {
         if(e.target.tagName !== "A") return;
         const value = e.target.dataset.page;
-        if(value === 'prev' || value === 'next') {
-            ee.emit('select-page', value);
-            return;
+
+        if(value === 'prev' || value === 'next' || value === 'first' || value === 'last') {
+            return ee.emit('select-page', value);
         }
+
         const page = Number(value);
 
         if(page === this.page) return;
