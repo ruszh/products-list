@@ -16,7 +16,7 @@ app.use((req, res, next) => {
     next();
 });
 
-mongoose.connect(process.env.MONGODB_URL);
+mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true});
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -25,5 +25,5 @@ app.use('/user', user);
 app.use('/list', list);
 
 app.listen(process.env.PORT, () => {
-    console.log(`Server started on port ${process.env.PORT}`);    
+    console.log(`Server started on port ${process.env.PORT}`);
 });

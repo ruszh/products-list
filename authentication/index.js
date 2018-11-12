@@ -14,33 +14,29 @@ export async function signin(req, res) {
         const user = await User.findOne({ email: req.body.email });
 
         if(user) {
-            bcrypt.compare(req.body.password, user.password, (err, result) => {
-                if(err) {
-                    return res.status(401).json({
-                        failed: 'Unauthorized Access'
-                    });
-                }
-                if(result) {
-                    const JWTToken = jwt.sign({
-                        email: user.email,
-                        _id: user._id
-                    },
-                    process.env.JWTSECRET,
-                    {
-                        expiresIn: '2h'
-                    });
-                    return res.status(200).json({
-                        success: `Success. Welcome ${user.email}!`,
-                        data: user,
-                        token: JWTToken
-                    })
-                }
-                return res.status(401).json({
-                    failed: 'Unauthorized Access'
+            const result = await bcrypt.compare(req.body.password, user.password);
+            if(result) {
+                const JWTToken = jwt.sign({
+                    email: user.email,
+                    _id: user._id
+                },
+                process.env.JWTSECRET,
+                {
+                    expiresIn: '2h'
                 });
-            });
-
+                return res.status(200).json({
+                    success: `Success. Welcome ${user.email}!`,
+                    data: user,
+                    token: JWTToken
+                });
+            }
+            return res.status(401).json({
+                error: 'Unauthorized Access'
+            })
         }
+        return res.status(401).json({
+            error: 'User not found'
+        })
     } catch(err) {
         res.status(500).json({
             error: "Something goes wrong"
@@ -50,7 +46,13 @@ export async function signin(req, res) {
 
 }
 
-export function signup(req, res) {
+export async function signup(req, res) {
+    const user = await User.findOne({ email: req.body.email });
+    if(user) {
+        return res.status(401).json({
+            error: 'User with same email alrady exist'
+        })
+    }
     bcrypt.hash(req.body.password, 10, async (err, hash) => {
         if(err) {
             return res.status(500).json({
@@ -60,6 +62,7 @@ export function signup(req, res) {
             const user = new User({
                 _id: new mongoose.Types.ObjectId(),
                 email: req.body.email,
+                name: req.body.name,
                 password: hash
             });
 
