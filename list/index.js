@@ -14,24 +14,24 @@ export async function save(req, res) {
         userId: req.body.userId,
         listName: req.body.listName,
         list: req.body.list,
-        date: req.body.date 
+        date: req.body.date
     });
 
     const result = await newList.save();
-    
+
     if(result) {
         console.log(result);
         return res.status(200).json({
                 success: 'New list has been created'
             });
     }
-    
+
     return res.status(500).json({
                 error: 'err'
-            });        
+            });
 }
 
-export async function load(req, res) { 
+export async function load(req, res) {
     const limit = req.body.limit;
     const items = await List.find({ userId: req.body.userId }).countDocuments();
     const pages = Math.ceil(items / limit);
@@ -45,8 +45,8 @@ export async function load(req, res) {
                                   .sort({ [sort]: sort === 'listName' ? 1 : -1 })
                                   .skip(skip)
                                   .limit(limit);
-    
-    
+
+
     if(!lists) {
         return res.send('Not found')
     }
@@ -55,16 +55,17 @@ export async function load(req, res) {
                 items,
                 pages,
                 current: page,
-                lists
+                lists,
+                sort
            });
 }
 
-export async function getList(req, res) { 
+export async function getList(req, res) {
     const list = await List.findOne({ _id: req.body.listId });
-    
+
     if(list) {
-        return res.status(200).json(list); 
-    }      
-         
+        return res.status(200).json(list);
+    }
+
     return res.status(500);
 }
