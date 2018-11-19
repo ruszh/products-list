@@ -48,7 +48,9 @@ export async function load(req, res) {
 
 
     if(!lists) {
-        return res.send('Not found')
+        return res.json({
+            error: 'Lists not found'
+        })
     }
 
     return res.status(200).json({
@@ -67,5 +69,7 @@ export async function getList(req, res) {
         return res.status(200).json(list);
     }
 
-    return res.status(500);
+    return res.status(500).json({
+        error: 'List is not found'
+    });
 }
